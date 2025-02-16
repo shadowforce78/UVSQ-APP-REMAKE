@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
     // État initial avec les dates par défaut
@@ -106,69 +106,189 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
 
     // Obtenir le type de cours pour le style
     const getEventTypeClass = (category) => {
-        if (category.includes('CM')) return 'cm';
-        if (category.includes('TD')) return 'td';
+        if (!category) return '';
+        
+        category = category.toLowerCase();
+        
+        if (category.includes('cm') || category.includes('cours magistral')) return 'cm';
+        if (category.includes('td') || category.includes('dirigé')) return 'td';
+        if (category.includes('tp') || category.includes('pratique')) return 'tp';
+        if (category.includes('ds') || category.includes('contrôle') || category.includes('cc')) return 'ds';
         if (category.includes('autonomie')) return 'autonomie';
-        if (category.includes('DS')) return 'ds';
+        
         return '';
+    };
+
+    // État pour la vue mobile
+    const [currentDayIndex, setCurrentDayIndex] = useState(0);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    // Détecter le changement de taille d'écran
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Navigation entre les jours en mode mobile
+    const navigateDay = (direction) => {
+        const days = Object.keys(groupByDay(schedule)).sort();
+        let newIndex = currentDayIndex + direction;
+        
+        if (newIndex < 0) newIndex = days.length - 1;
+        if (newIndex >= days.length) newIndex = 0;
+        
+        setCurrentDayIndex(newIndex);
+    };
+
+    const renderDaySchedule = (date, events) => (
+        <div key={date} className="schedule-day">
+            <h2>{new Date(date.split('/').reverse().join('-')).toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+            })}</h2>
+
+            <div className="schedule-events">
+                {events
+                    .sort((a, b) => {
+                        const timeA = a.Heure.split(' ')[1].split('-')[0];
+                        const timeB = b.Heure.split(' ')[1].split('-')[0];
+                        return timeA.localeCompare(timeB);
+                    })
+                    .map((event, index) => (
+                        <div 
+                            key={`${date}-${index}`}
+                            className={`schedule-event ${getEventTypeClass(event["Catégorie d'événement"])}`}
+                        >
+                            <div className="event-time">
+                                {formatTime(event.Heure)}
+                            </div>
+                            <div className="event-details">
+                                <div className="event-header">
+                                    <span className="event-subject">{event.Matière}</span>
+                                    <span className="event-type">{event["Catégorie d’événement"]}</span>
+                                </div>
+                                <div className="event-info">
+                                    {event.Personnel && (
+                                        <span className="event-teacher">
+                                            👤 {event.Personnel}
+                                        </span>
+                                    )}
+                                    <span className="event-location">
+                                        🏢 {event.Salle}
+                                    </span>
+                                    <span className="event-group">
+                                        👥 {event.Groupe}
+                                    </span>
+                                </div>
+                                {event.Remarques && (
+                                    <div className="event-notes">
+                                        📝 {event.Remarques}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+            </div>
+        </div>
+    );
+
+    const renderSchedule = () => {
+        if (!schedule || !Array.isArray(schedule)) return null;
+        
+        const groupedEvents = groupByDay(schedule);
+        const days = Object.entries(groupedEvents).sort();
+
+        if (isMobile) {
+            const currentDay = days[currentDayIndex];
+            return (
+                <>
+                    <div className="mobile-day-selector">
+                        <button className="day-nav-button" onClick={() => navigateDay(-1)}>
+                            ←
+                        </button>
+                        <span className="current-day">
+                            {new Date(currentDay[0].split('/').reverse().join('-'))
+                                .toLocaleDateString('fr-FR', { weekday: 'long' })}
+                        </span>
+                        <button className="day-nav-button" onClick={() => navigateDay(1)}>
+                            →
+                        </button>
+                    </div>
+                    {renderDaySchedule(currentDay[0], currentDay[1])}
+                </>
+            );
+        }
+
+        return (
+            <div className="schedule-week">
+                {days.map(([date, events]) => renderDaySchedule(date, events))}
+            </div>
+        );
     };
 
     return (
         <div className="schedule-page">
-            <button className="back-button" onClick={onBack}>← Retour</button>
-            <h1>Emploi du temps</h1>
+            <div className="schedule-header">
+                <button className="back-button" onClick={onBack}>← Retour</button>
+                <h1>Emploi du temps</h1>
 
-            <form className="schedule-form" onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>
-                        Formation :
-                        <select 
-                            value={selectedClass} 
-                            onChange={(e) => setSelectedClass(e.target.value)}
-                        >
-                            {classes.map(c => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
-                        </select>
-                    </label>
-                </div>
-
-                <div className="form-row">
+                <form className="schedule-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>
-                            Du :
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                            />
+                            Formation :
+                            <select 
+                                value={selectedClass} 
+                                onChange={(e) => setSelectedClass(e.target.value)}
+                            >
+                                {classes.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
                         </label>
                     </div>
-                    <div className="form-group">
-                        <label>
-                            Au :
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                min={startDate}
-                            />
-                        </label>
-                    </div>
-                </div>
 
-                <div className="week-navigation">
-                    <button type="button" className="nav-button prev" onClick={handlePrevWeek}>
-                        ← Semaine précédente
-                    </button>
-                    <button type="submit" className="primary-button">
-                        Actualiser
-                    </button>
-                    <button type="button" className="nav-button next" onClick={handleNextWeek}>
-                        Semaine suivante →
-                    </button>
-                </div>
-            </form>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>
+                                Du :
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                />
+                            </label>
+                        </div>
+                        <div className="form-group">
+                            <label>
+                                Au :
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    min={startDate}
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="week-navigation">
+                        <button type="button" className="nav-button prev" onClick={handlePrevWeek}>
+                            ← Semaine précédente
+                        </button>
+                        <button type="submit" className="primary-button">
+                            Actualiser
+                        </button>
+                        <button type="button" className="nav-button next" onClick={handleNextWeek}>
+                            Semaine suivante →
+                        </button>
+                    </div>
+                </form>
+            </div>
 
             {error && (
                 <div className="error-message">
@@ -179,67 +299,21 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
                 </div>
             )}
 
-            {loading ? (
-                <div className="loading-message">
-                    Chargement de l'emploi du temps...
-                </div>
-            ) : schedule && Array.isArray(schedule) && schedule.length > 0 ? (
-                Object.entries(groupByDay(schedule)).map(([date, events]) => (
-                    <div key={date} className="schedule-day">
-                        <h2>{new Date(date.split('/').reverse().join('-')).toLocaleDateString('fr-FR', {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                        })}</h2>
-
-                        <div className="schedule-events">
-                            {events
-                                .sort((a, b) => a.Heure.localeCompare(b.Heure))
-                                .map((event, index) => (
-                                    <div 
-                                        key={index} 
-                                        className={`schedule-event ${getEventTypeClass(event["Catégorie d'événement"])}`}
-                                    >
-                                        <div className="event-time">
-                                            {formatTime(event.Heure)}
-                                        </div>
-                                        <div className="event-details">
-                                            <div className="event-header">
-                                                <span className="event-subject">{event.Matière}</span>
-                                                <span className="event-type">{event["Catégorie d'événement"]}</span>
-                                            </div>
-                                            <div className="event-info">
-                                                {event.Personnel && (
-                                                    <span className="event-teacher">
-                                                        👤 {event.Personnel}
-                                                    </span>
-                                                )}
-                                                <span className="event-location">
-                                                    🏢 {event.Salle}
-                                                </span>
-                                                <span className="event-group">
-                                                    👥 {event.Groupe}
-                                                </span>
-                                            </div>
-                                            {event.Remarques && (
-                                                <div className="event-notes">
-                                                    📝 {event.Remarques}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                            ))}
-                        </div>
+            <div className="schedule-container">
+                {loading ? (
+                    <div className="loading-message">
+                        Chargement de l'emploi du temps...
                     </div>
-                ))
-            ) : !error && (
-                <div className="no-schedule">
-                    Aucun cours programmé pour cette période
-                </div>
-            )}
+                ) : schedule && Array.isArray(schedule) && schedule.length > 0 ? (
+                    renderSchedule()
+                ) : !error && (
+                    <div className="no-schedule">
+                        Aucun cours programmé pour cette période
+                    </div>
+                )}
+            </div>
         </div>
-    )
+    );
 }
 
-export default SchedulePage
+export default SchedulePage;
