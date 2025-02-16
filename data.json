@@ -1,0 +1,874 @@
+{
+    "config": {
+        "passerelle_version": "6:3:4",
+        "histogramme": true,
+        "message_non_publication_releve": "Le responsable de votre formation a décidé de ne pas publier le relevé de notes de ce semestre.",
+        "releve_PDF": true,
+        "liste_dep_publi_PDF": "",
+        "etudiant_modif_photo": true,
+        "acces_enseignants": true,
+        "cloisonner_enseignants": false,
+        "analystics_interne": false,
+        "envoi_donnees_version": true,
+        "analyse_temps_requetes": false,
+        "nom_IUT": "IUT de Velizy",
+        "doc_afficher_nip": true,
+        "doc_afficher_id": true,
+        "doc_afficher_date_naissance": true,
+        "idReg": "^.+$",
+        "idPlaceHolder": "Identifiant CAS",
+        "idInfo": "Ajoutez l\\x27identifiant CAS",
+        "nameReg": "^[A-Z][a-zA-Z\\xc0-\\xff\\x27 -]*$",
+        "namePlaceHolder": "Nom Prénom",
+        "nameInfo": "Nom et prénom de l\\x27utilisateur",
+        "module_absences": true,
+        "afficher_absences": true,
+        "data_absences_scodoc": true,
+        "metrique_absences": "passerelle",
+        "autoriser_justificatifs": false,
+        "liste_dep_ok_justificatifs": "",
+        "liste_dep_publi_absences": "TEMA",
+        "message_rapport_absences": "Les causes de l’absence doivent être notifiées par écrit à l'aide d'un justificatif dans les 48 heures à compter du début de l’absence au secrétariat du département. Voir règlement intérieur pour les motifs légitimes d'absence.",
+        "message_justificatifs": "",
+        "absence_heureDebut": 8,
+        "absence_heureFin": 20,
+        "absence_pas": 0.5,
+        "absence_dureeSeance": 2,
+        "session": "22401313",
+        "name": "Planque Adam",
+        "statut": 10
+    },
+    "auth": {
+        "session": "22401313",
+        "name": "Planque Adam",
+        "statut": 10
+    },
+    "semestres": [
+        {
+            "titre": "BUT Info",
+            "formsemestre_id": 507,
+            "semestre_id": 1,
+            "annee_scolaire": "2024/2025"
+        },
+        {
+            "titre": "BUT Info",
+            "formsemestre_id": 524,
+            "semestre_id": 2,
+            "annee_scolaire": "2024/2025"
+        }
+    ],
+    "relevé": {
+        "version": "0",
+        "type": "BUT",
+        "date": "2025-02-16T21:27:02.472637+01:00",
+        "publie": true,
+        "etat_inscription": "I",
+        "etudiant": {
+            "boursier": "",
+            "civilite_etat_civil": null,
+            "civilite": "M",
+            "code_ine": "",
+            "code_nip": "22401313",
+            "date_naissance": "19/03/2007",
+            "dept_acronym": "INFO",
+            "dept_id": 4,
+            "dept_naissance": "",
+            "email": "planque.adam@gmail.com",
+            "emailperso": "",
+            "etat_civil": "M. ADAM PLANQUE",
+            "etudid": 5724,
+            "lieu_naissance": "",
+            "nationalite": "",
+            "nom": "PLANQUE",
+            "nomprenom": "M. Adam PLANQUE",
+            "prenom_etat_civil": null,
+            "prenom": "ADAM",
+            "fiche_url": "/ScoDoc/INFO/Scolarite/fiche_etud?etudid=5724",
+            "photo_url": "/ScoDoc/INFO/Scolarite/get_photo_image?etudid=5724&size=small",
+            "codepostaldomicile": "78180",
+            "paysdomicile": "FRANCE",
+            "telephonemobile": "",
+            "typeadresse": "domicile",
+            "id": 5724,
+            "domicile": "18 Rue Jean Jacques Rousseau",
+            "villedomicile": "MONTIGNY-LE-BRETONNEUX",
+            "telephone": "+33766343115",
+            "fax": "",
+            "description": "infos portail"
+        },
+        "formation": {
+            "id": 28,
+            "acronyme": "BUT Info",
+            "titre_officiel": "BUT Informatique",
+            "titre": "BUT Informatique"
+        },
+        "formsemestre_id": 524,
+        "options": {
+            "show_abs": true,
+            "show_abs_modules": false,
+            "show_ects": false,
+            "show_codemodules": false,
+            "show_matieres": false,
+            "show_rangs": true,
+            "show_ue_rangs": true,
+            "show_mod_rangs": true,
+            "show_moypromo": false,
+            "show_minmax": true,
+            "show_minmax_mod": true,
+            "show_minmax_eval": false,
+            "show_coef": true,
+            "show_ue_cap_details": true,
+            "show_ue_cap_current": false,
+            "show_temporary": true,
+            "temporary_txt": "Provisoire",
+            "show_uevalid": true,
+            "show_date_inscr": false,
+            "block_moyenne_generale": false,
+            "bgcolor": "white"
+        },
+        "appreciation": [],
+        "ressources": {
+            "R2.01": {
+                "id": 7806,
+                "titre": "Dev. objets",
+                "code_apogee": "IN2RO1",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7806",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.02": {
+                "id": 7807,
+                "titre": "Dev. d'apps avec IHM",
+                "code_apogee": "IN2R02",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7807",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.03": {
+                "id": 7808,
+                "titre": "Qualité de dev.",
+                "code_apogee": "IN2R03",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7808",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.04": {
+                "id": 7809,
+                "titre": "Réseau & bas niveau",
+                "code_apogee": "IN2R04",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7809",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.05": {
+                "id": 7810,
+                "titre": "Services réseau",
+                "code_apogee": "IN2R05",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7810",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.06": {
+                "id": 7811,
+                "titre": "Exploitation BD",
+                "code_apogee": "IN2R06",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7811",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.07": {
+                "id": 7812,
+                "titre": "Graphes",
+                "code_apogee": "IN2R07",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7812",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.08": {
+                "id": 7813,
+                "titre": "Stats descriptives",
+                "code_apogee": "IN2R08",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7813",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.09": {
+                "id": 7814,
+                "titre": "Méthodes numériques",
+                "code_apogee": "IN2R09",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7814",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.10": {
+                "id": 7815,
+                "titre": "Gestion proj. orga.",
+                "code_apogee": "IN2R10",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7815",
+                "moyenne": {},
+                "evaluations": [
+                    {
+                        "id": 17859,
+                        "coef": "00.25",
+                        "date_debut": "2025-02-08T00:00:00+01:00",
+                        "date_fin": "2025-02-08T00:00:00+01:00",
+                        "description": "WBS - Organigramme des tâches - Bomber IUT",
+                        "evaluation_type": 0,
+                        "note": {
+                            "value": "11.67",
+                            "min": "03.33",
+                            "max": "20.00",
+                            "moy": "15.40"
+                        },
+                        "poids": {
+                            "UE2.1": 0,
+                            "UE2.2": 0,
+                            "UE2.3": 0,
+                            "UE2.4": 1,
+                            "UE2.5": 1,
+                            "UE2.6": 0
+                        },
+                        "url": "/ScoDoc/INFO/Scolarite/Notes/evaluation_listenotes?evaluation_id=17859",
+                        "date": "2025-02-08T00:00:00+01:00",
+                        "heure_debut": "00:00",
+                        "heure_fin": "00:00"
+                    }
+                ]
+            },
+            "R2.11": {
+                "id": 7816,
+                "titre": "Droit",
+                "code_apogee": "IN2R11",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7816",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.12": {
+                "id": 7817,
+                "titre": "Anglais entreprise",
+                "code_apogee": "IN2R12",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7817",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.13": {
+                "id": 7818,
+                "titre": "Comm. prof.",
+                "code_apogee": "IN2R13",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7818",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "R2.14": {
+                "id": 7819,
+                "titre": "PPP",
+                "code_apogee": "IN2R14",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7819",
+                "moyenne": {},
+                "evaluations": []
+            }
+        },
+        "saes": {
+            "SAE2.01": {
+                "id": 7820,
+                "titre": "Développement d'une application",
+                "code_apogee": "IN2SAE01",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7820",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "SAE2.02": {
+                "id": 7821,
+                "titre": "Exploration algorithmique d'un problème",
+                "code_apogee": "IN2SAE02",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7821",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "SAE2.03": {
+                "id": 7822,
+                "titre": "Installation de services réseau",
+                "code_apogee": "IN2SAE03",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7822",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "SAE2.04": {
+                "id": 7823,
+                "titre": "Exploitation BD",
+                "code_apogee": "IN2SAE04",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7823",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "SAE2.05": {
+                "id": 7824,
+                "titre": "Gestion d'un projet",
+                "code_apogee": "IN2SAE05",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7824",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "SAE2.06": {
+                "id": 7825,
+                "titre": "Organisation d'un travail d'équipe",
+                "code_apogee": "IN2SAE06",
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7825",
+                "moyenne": {},
+                "evaluations": []
+            },
+            "P2.01": {
+                "id": 7826,
+                "titre": "Portfolio",
+                "code_apogee": null,
+                "url": "/ScoDoc/INFO/Scolarite/Notes/moduleimpl_status?moduleimpl_id=7826",
+                "moyenne": {},
+                "evaluations": []
+            }
+        },
+        "ues_capitalisees": {},
+        "semestre": {
+            "etapes": [
+                "BINFO1"
+            ],
+            "date_debut": "2025-01-27",
+            "date_fin": "2025-06-30",
+            "annee_universitaire": "2024 - 2025",
+            "numero": 2,
+            "inscription": "",
+            "groupes": [
+                {
+                    "id": 2208,
+                    "edt_id": null,
+                    "group_name": "A",
+                    "partition_id": 1198,
+                    "numero": 0,
+                    "partition": {
+                        "formsemestre_id": 524,
+                        "partition_name": "Parcours",
+                        "numero": -1,
+                        "show_in_lists": true,
+                        "id": 1198,
+                        "bul_show_rank": false,
+                        "groups_editable": false,
+                        "partition_id": 1198
+                    }
+                },
+                {
+                    "id": 2216,
+                    "edt_id": null,
+                    "group_name": "B",
+                    "partition_id": 1203,
+                    "numero": 1,
+                    "partition": {
+                        "formsemestre_id": 524,
+                        "partition_name": "TD",
+                        "numero": 0,
+                        "show_in_lists": true,
+                        "id": 1203,
+                        "bul_show_rank": false,
+                        "groups_editable": true,
+                        "partition_id": 1203
+                    }
+                }
+            ],
+            "absences": {
+                "injustifie": 1,
+                "total": 1,
+                "metrique": "1/2 Jour."
+            },
+            "diplomation": "",
+            "situation": "Inscrit le 30/01/2025",
+            "diplome_dut120": false,
+            "diplome_dut120_descr": "",
+            "decision": {
+                "code": "",
+                "etat": "I",
+                "date": ""
+            },
+            "decision_ue": [],
+            "autorisation_inscription": [],
+            "decision_rcue": [],
+            "descr_decisions_rcue": "",
+            "descr_decisions_rcue_list": [],
+            "descr_decisions_niveaux": "Niveaux de compétences: ",
+            "decision_annee": null,
+            "notes": {
+                "value": "03.89",
+                "min": "00.00",
+                "moy": "04.56",
+                "max": "06.67"
+            },
+            "rang": {
+                "value": "55 ex",
+                "total": 72,
+                "groupes": {}
+            }
+        },
+        "ues": {
+            "UE2.1": {
+                "id": 582,
+                "titre": "Développer des applications informatiques simples",
+                "numero": 6,
+                "type": 0,
+                "color": "#b80004",
+                "competence": null,
+                "moyenne": {
+                    "value": "~",
+                    "min": "~",
+                    "max": "~",
+                    "moy": "~",
+                    "rang": "34",
+                    "total": 0,
+                    "groupes": {}
+                },
+                "bonus": "00.00",
+                "malus": "00.00",
+                "capitalise": null,
+                "ressources": {
+                    "R2.01": {
+                        "id": 7806,
+                        "coef": 21,
+                        "moyenne": "~"
+                    },
+                    "R2.02": {
+                        "id": 7807,
+                        "coef": 21,
+                        "moyenne": "~"
+                    },
+                    "R2.03": {
+                        "id": 7808,
+                        "coef": 12,
+                        "moyenne": "~"
+                    },
+                    "R2.13": {
+                        "id": 7818,
+                        "coef": 6,
+                        "moyenne": "~"
+                    }
+                },
+                "saes": {
+                    "SAE2.01": {
+                        "id": 7820,
+                        "coef": 38,
+                        "moyenne": "~"
+                    },
+                    "P2.01": {
+                        "id": 7826,
+                        "coef": 2,
+                        "moyenne": "~"
+                    }
+                }
+            },
+            "UE2.2": {
+                "id": 583,
+                "titre": "Appréhender et construire des algorithmes",
+                "numero": 7,
+                "type": 0,
+                "color": "#f97b3d",
+                "competence": null,
+                "moyenne": {
+                    "value": "~",
+                    "min": "~",
+                    "max": "~",
+                    "moy": "~",
+                    "rang": "34",
+                    "total": 0,
+                    "groupes": {}
+                },
+                "bonus": "00.00",
+                "malus": "00.00",
+                "capitalise": null,
+                "ressources": {
+                    "R2.01": {
+                        "id": 7806,
+                        "coef": 15,
+                        "moyenne": "~"
+                    },
+                    "R2.04": {
+                        "id": 7809,
+                        "coef": 12,
+                        "moyenne": "~"
+                    },
+                    "R2.07": {
+                        "id": 7812,
+                        "coef": 21,
+                        "moyenne": "~"
+                    },
+                    "R2.09": {
+                        "id": 7814,
+                        "coef": 12,
+                        "moyenne": "~"
+                    }
+                },
+                "saes": {
+                    "SAE2.02": {
+                        "id": 7821,
+                        "coef": 38,
+                        "moyenne": "~"
+                    },
+                    "P2.01": {
+                        "id": 7826,
+                        "coef": 2,
+                        "moyenne": "~"
+                    }
+                }
+            },
+            "UE2.3": {
+                "id": 584,
+                "titre": "Installer et configurer un poste de travail",
+                "numero": 8,
+                "type": 0,
+                "color": "#feb40b",
+                "competence": null,
+                "moyenne": {
+                    "value": "~",
+                    "min": "~",
+                    "max": "~",
+                    "moy": "~",
+                    "rang": "34",
+                    "total": 0,
+                    "groupes": {}
+                },
+                "bonus": "00.00",
+                "malus": "00.00",
+                "capitalise": null,
+                "ressources": {
+                    "R2.04": {
+                        "id": 7809,
+                        "coef": 36,
+                        "moyenne": "~"
+                    },
+                    "R2.05": {
+                        "id": 7810,
+                        "coef": 15,
+                        "moyenne": "~"
+                    },
+                    "R2.12": {
+                        "id": 7817,
+                        "coef": 6,
+                        "moyenne": "~"
+                    },
+                    "R2.13": {
+                        "id": 7818,
+                        "coef": 3,
+                        "moyenne": "~"
+                    }
+                },
+                "saes": {
+                    "SAE2.03": {
+                        "id": 7822,
+                        "coef": 38,
+                        "moyenne": "~"
+                    },
+                    "P2.01": {
+                        "id": 7826,
+                        "coef": 2,
+                        "moyenne": "~"
+                    }
+                }
+            },
+            "UE2.4": {
+                "id": 585,
+                "titre": "Concevoir et mettre en place une base de données à partir d’un cahier des charges client",
+                "numero": 9,
+                "type": 0,
+                "color": "#80cb3f",
+                "competence": null,
+                "moyenne": {
+                    "value": "11.67",
+                    "min": "00.00",
+                    "max": "20.00",
+                    "moy": "14.08",
+                    "rang": "55 ex",
+                    "total": 70,
+                    "groupes": {}
+                },
+                "bonus": "00.00",
+                "malus": "00.00",
+                "capitalise": null,
+                "ressources": {
+                    "R2.06": {
+                        "id": 7811,
+                        "coef": 30,
+                        "moyenne": "~"
+                    },
+                    "R2.08": {
+                        "id": 7813,
+                        "coef": 12,
+                        "moyenne": "~"
+                    },
+                    "R2.10": {
+                        "id": 7815,
+                        "coef": 12,
+                        "moyenne": "11.67"
+                    },
+                    "R2.12": {
+                        "id": 7817,
+                        "coef": 6,
+                        "moyenne": "~"
+                    }
+                },
+                "saes": {
+                    "SAE2.04": {
+                        "id": 7823,
+                        "coef": 38,
+                        "moyenne": "~"
+                    },
+                    "P2.01": {
+                        "id": 7826,
+                        "coef": 2,
+                        "moyenne": "~"
+                    }
+                }
+            },
+            "UE2.5": {
+                "id": 586,
+                "titre": "Identifier les besoins métiers des clients et des utilisateurs",
+                "numero": 10,
+                "type": 0,
+                "color": "#05162e",
+                "competence": null,
+                "moyenne": {
+                    "value": "11.67",
+                    "min": "00.00",
+                    "max": "20.00",
+                    "moy": "14.08",
+                    "rang": "55 ex",
+                    "total": 70,
+                    "groupes": {}
+                },
+                "bonus": "00.00",
+                "malus": "00.00",
+                "capitalise": null,
+                "ressources": {
+                    "R2.02": {
+                        "id": 7807,
+                        "coef": 3,
+                        "moyenne": "~"
+                    },
+                    "R2.03": {
+                        "id": 7808,
+                        "coef": 6,
+                        "moyenne": "~"
+                    },
+                    "R2.07": {
+                        "id": 7812,
+                        "coef": 6,
+                        "moyenne": "~"
+                    },
+                    "R2.10": {
+                        "id": 7815,
+                        "coef": 30,
+                        "moyenne": "11.67"
+                    },
+                    "R2.12": {
+                        "id": 7817,
+                        "coef": 6,
+                        "moyenne": "~"
+                    },
+                    "R2.13": {
+                        "id": 7818,
+                        "coef": 9,
+                        "moyenne": "~"
+                    }
+                },
+                "saes": {
+                    "SAE2.05": {
+                        "id": 7824,
+                        "coef": 38,
+                        "moyenne": "~"
+                    },
+                    "P2.01": {
+                        "id": 7826,
+                        "coef": 2,
+                        "moyenne": "~"
+                    }
+                }
+            },
+            "UE2.6": {
+                "id": 587,
+                "titre": "Identifier ses aptitudes pour travailler dans une équipe",
+                "numero": 11,
+                "type": 0,
+                "color": "#548687",
+                "competence": null,
+                "moyenne": {
+                    "value": "~",
+                    "min": "~",
+                    "max": "~",
+                    "moy": "~",
+                    "rang": "34",
+                    "total": 0,
+                    "groupes": {}
+                },
+                "bonus": "00.00",
+                "malus": "00.00",
+                "capitalise": null,
+                "ressources": {
+                    "R2.02": {
+                        "id": 7807,
+                        "coef": 4,
+                        "moyenne": "~"
+                    },
+                    "R2.11": {
+                        "id": 7816,
+                        "coef": 17,
+                        "moyenne": "~"
+                    },
+                    "R2.12": {
+                        "id": 7817,
+                        "coef": 17,
+                        "moyenne": "~"
+                    },
+                    "R2.13": {
+                        "id": 7818,
+                        "coef": 11,
+                        "moyenne": "~"
+                    },
+                    "R2.14": {
+                        "id": 7819,
+                        "coef": 11,
+                        "moyenne": "~"
+                    }
+                },
+                "saes": {
+                    "SAE2.06": {
+                        "id": 7825,
+                        "coef": 38,
+                        "moyenne": "~"
+                    },
+                    "P2.01": {
+                        "id": 7826,
+                        "coef": 2,
+                        "moyenne": "~"
+                    }
+                }
+            }
+        }
+    },
+    "absences": {
+        "2025-02-05": [
+            {
+                "idAbs": 115741,
+                "idJustif": [],
+                "debut": 11,
+                "fin": 12.5,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "fabhog1",
+                "matiereComplet": 7813,
+                "dateFin": "2025-02-05"
+            },
+            {
+                "idAbs": 115413,
+                "idJustif": [],
+                "debut": 9.5,
+                "fin": 11,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "isabrobb",
+                "matiereComplet": "Non défini",
+                "dateFin": "2025-02-05"
+            },
+            {
+                "idAbs": 115951,
+                "idJustif": [],
+                "debut": 13.5,
+                "fin": 14.5,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "isabrobb",
+                "matiereComplet": "Non défini",
+                "dateFin": "2025-02-05"
+            }
+        ],
+        "2025-02-06": [
+            {
+                "idAbs": 116251,
+                "idJustif": [],
+                "debut": 13,
+                "fin": 14.5,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "ecukalla",
+                "matiereComplet": 7817,
+                "dateFin": "2025-02-06"
+            }
+        ],
+        "2025-02-07": [
+            {
+                "idAbs": 116803,
+                "idJustif": [],
+                "debut": 10,
+                "fin": 11,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "ecukalla",
+                "matiereComplet": 7817,
+                "dateFin": "2025-02-07"
+            },
+            {
+                "idAbs": 116983,
+                "idJustif": [],
+                "debut": 13,
+                "fin": 19,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "karizeit",
+                "matiereComplet": 7823,
+                "dateFin": "2025-02-07"
+            }
+        ],
+        "2025-02-11": [
+            {
+                "idAbs": 118064,
+                "idJustif": [],
+                "debut": 11,
+                "fin": 12.5,
+                "statut": "absent",
+                "justifie": false,
+                "enseignant": "isabrobb",
+                "matiereComplet": "Non défini",
+                "dateFin": "2025-02-11"
+            }
+        ],
+        "2025-02-13": [
+            {
+                "idAbs": 119044,
+                "idJustif": [],
+                "debut": 16,
+                "fin": 17,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "ecukalla",
+                "matiereComplet": "Non défini",
+                "dateFin": "2025-02-13"
+            },
+            {
+                "idAbs": 118829,
+                "idJustif": [],
+                "debut": 13,
+                "fin": 14.5,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "ecukalla",
+                "matiereComplet": 7817,
+                "dateFin": "2025-02-13"
+            }
+        ],
+        "2025-02-14": [
+            {
+                "idAbs": 119250,
+                "idJustif": [],
+                "debut": 13,
+                "fin": 19,
+                "statut": "present",
+                "justifie": false,
+                "enseignant": "karizeit",
+                "matiereComplet": "Non défini",
+                "dateFin": "2025-02-14"
+            }
+        ]
+    }
+}
