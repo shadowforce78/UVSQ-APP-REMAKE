@@ -144,14 +144,29 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
         setCurrentDayIndex(newIndex);
     };
 
-    const renderDaySchedule = (date, events) => (
-        <div key={date} className="schedule-day">
-            <h2>{new Date(date.split('/').reverse().join('-')).toLocaleDateString('fr-FR', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-            })}</h2>
+    // Formater la date pour l'affichage
+    const formatDisplayDate = (dateStr) => {
+        const [day, month, year] = dateStr.split('/');
+        const date = new Date(`${year}-${month}-${day}`);
+        return new Intl.DateTimeFormat('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).format(date);
+    };
 
+    // Vérifier si une date est aujourd'hui
+    const isToday = (dateStr) => {
+        const [day, month, year] = dateStr.split('/');
+        const date = new Date(`${year}-${month}-${day}`);
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
+    const renderDaySchedule = (date, events) => (
+        <div key={date} className={`schedule-day ${isToday(date) ? 'today' : ''}`}>
+            <h2>{formatDisplayDate(date)}</h2>
             <div className="schedule-events">
                 {events
                     .sort((a, b) => {
@@ -169,8 +184,12 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
                             </div>
                             <div className="event-details">
                                 <div className="event-header">
-                                    <span className="event-subject">{event.Matière}</span>
-                                    <span className="event-type">{event["Catégorie d’événement"]}</span>
+                                    <span className="event-subject">
+                                        {event.Matière}
+                                        <span className="event-type">
+                                            {event["Catégorie d'événement"]}
+                                        </span>
+                                    </span>
                                 </div>
                                 <div className="event-info">
                                     {event.Personnel && (
@@ -178,12 +197,16 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
                                             👤 {event.Personnel}
                                         </span>
                                     )}
-                                    <span className="event-location">
-                                        🏢 {event.Salle}
-                                    </span>
-                                    <span className="event-group">
-                                        👥 {event.Groupe}
-                                    </span>
+                                    {event.Salle && (
+                                        <span className="event-location">
+                                            🏢 {event.Salle}
+                                        </span>
+                                    )}
+                                    {event.Groupe && (
+                                        <span className="event-group">
+                                            👥 {event.Groupe}
+                                        </span>
+                                    )}
                                 </div>
                                 {event.Remarques && (
                                     <div className="event-notes">
@@ -201,10 +224,21 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
         if (!schedule || !Array.isArray(schedule)) return null;
         
         const groupedEvents = groupByDay(schedule);
-        const days = Object.entries(groupedEvents).sort();
+        const days = Object.entries(groupedEvents)
+            .sort(([dateA], [dateB]) => {
+                const [dayA, monthA, yearA] = dateA.split('/');
+                const [dayB, monthB, yearB] = dateB.split('/');
+                const dateObjA = new Date(`${yearA}-${monthA}-${dayA}`);
+                const dateObjB = new Date(`${yearB}-${monthB}-${dayB}`);
+                return dateObjA - dateObjB;
+            });
 
         if (isMobile) {
+            if (days.length === 0) return null;
+            
             const currentDay = days[currentDayIndex];
+            if (!currentDay) return null;
+
             return (
                 <>
                     <div className="mobile-day-selector">
@@ -212,8 +246,7 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
                             ←
                         </button>
                         <span className="current-day">
-                            {new Date(currentDay[0].split('/').reverse().join('-'))
-                                .toLocaleDateString('fr-FR', { weekday: 'long' })}
+                            {formatDisplayDate(currentDay[0])}
                         </span>
                         <button className="day-nav-button" onClick={() => navigateDay(1)}>
                             →

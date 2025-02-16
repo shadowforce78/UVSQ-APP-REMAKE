@@ -435,6 +435,23 @@
   padding: 1.5rem;
   margin-bottom: 2rem;
   border: 1px solid rgba(100, 108, 255, 0.3);
+  min-width: 300px;
+  transition: all 0.3s ease;
+}
+
+.schedule-day.today {
+  border-color: #646cff;
+  background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+  box-shadow: 0 0 20px rgba(100, 108, 255, 0.2);
+}
+
+.schedule-day h2 {
+  color: #8f95ff;
+  text-transform: capitalize;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 1.2rem;
 }
 
 .schedule-day h2 {
@@ -838,73 +855,94 @@
 /* ...existing styles... */
 
 .schedule-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1rem;
 }
 
 .schedule-week {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
-    overflow-x: auto;
-    padding: 0.5rem;
+    width: 100%;
 }
 
 .schedule-day {
-    min-width: 300px;
-    height: fit-content;
+    min-width: 0; /* Permet aux éléments de se rétrécir si nécessaire */
+    height: auto;
+    flex: 1;
 }
 
-.schedule-header {
-    position: sticky;
-    top: 0;
-    background: #1a1a1a;
-    padding: 1rem;
-    z-index: 10;
-    border-bottom: 1px solid rgba(100, 108, 255, 0.3);
+.schedule-events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.schedule-event {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    min-height: 80px;
+}
+
+.event-details {
+    overflow: hidden; /* Évite le débordement du contenu */
+}
+
+.event-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 /* Styles pour mobile */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .schedule-week {
         grid-template-columns: 1fr;
     }
 
     .schedule-day {
-        min-width: 100%;
+        margin-bottom: 1rem;
     }
 
-    .mobile-day-selector {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 1rem 0;
-        padding: 0.5rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-    }
-
-    .day-nav-button {
-        background: transparent;
-        color: #8f95ff;
-        border: none;
-        padding: 0.5rem;
-        cursor: pointer;
-        font-size: 1.2rem;
-    }
-
-    .current-day {
-        color: #fff;
-        font-weight: 600;
+    .event-info {
+        grid-template-columns: 1fr;
     }
 }
 
-/* Masquer le sélecteur de jour sur desktop */
-@media (min-width: 769px) {
-    .mobile-day-selector {
-        display: none;
+/* Ajustements pour tablette */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .schedule-week {
+        grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Styles spécifiques pour le header fixe */
+.schedule-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1a1a1a;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+/* Ajustements pour les sélecteurs de date et de classe */
+.schedule-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
 }
 
 /* ...existing styles... */
