@@ -99,11 +99,26 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
         onRefresh(selectedClass, startDate, endDate)
     }
 
+    // Fonction utilitaire pour convertir les dates
+    const formatDateForDisplay = (dateStr) => {
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
+    // Fonction pour obtenir le jour de la semaine d'une date
+    const getDayOfWeek = (dateStr) => {
+        const [day, month, year] = dateStr.split('/');
+        const date = new Date(`${year}-${month}-${day}`);
+        const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        return days[date.getDay()];
+    };
+
     // Grouper les événements par jour
     const groupByDay = (events) => {
         if (!events || !Array.isArray(events)) return {};
         return events.reduce((acc, event) => {
-            const date = event.Heure.split(' ')[0];
+            // Extraction de la date de l'attribut Date au lieu de Heure
+            const date = event.Date;
             if (!acc[date]) {
                 acc[date] = [];
             }
@@ -171,9 +186,9 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
 
     // Vérifier si une date est aujourd'hui
     const isToday = (dateStr) => {
-        const [day, month, year] = dateStr.split('/');
-        const date = new Date(`${year}-${month}-${day}`);
         const today = new Date();
+        const [year, month, day] = dateStr.split('-');
+        const date = new Date(year, month - 1, day);
         return date.toDateString() === today.toDateString();
     };
 
@@ -194,34 +209,37 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
         if (!schedule || !Array.isArray(schedule)) return null;
 
         const groupedEvents = groupByDay(schedule);
+        console.log('Événements groupés:', groupedEvents); // Pour le débogage
 
+        // Récupérer les dates de la semaine à partir des événements
+        const dates = Object.keys(groupedEvents).sort();
+        
         return (
             <div className="schedule-grid-container">
                 <div className="schedule-grid">
-                    {/* En-tête avec les jours */}
                     <div className="grid-header">Horaire</div>
-                    {weekDays.map(day => (
-                        <div key={day} className={`grid-header ${isToday(day) ? 'today' : ''}`}>
-                            {day}
+                    {dates.map(date => (
+                        <div key={date} className={`grid-header ${isToday(date) ? 'today' : ''}`}>
+                            {getDayOfWeek(date)}<br />
+                            {formatDateForDisplay(date)}
                         </div>
                     ))}
 
-                    {/* Grille des créneaux horaires */}
                     {timeSlots.map(timeSlot => (
                         <React.Fragment key={timeSlot}>
                             <div className="time-slot">{timeSlot}</div>
-                            {weekDays.map(day => {
-                                const dayEvents = groupedEvents[day] || [];
-                                const event = dayEvents.find(e => e.Heure.split(' ')[1] === timeSlot);
-                                
+                            {dates.map(date => {
+                                const dayEvents = groupedEvents[date] || [];
+                                const event = dayEvents.find(e => e.HeureDebut === timeSlot.split('-')[0]);
+
                                 return (
-                                    <div key={`${day}-${timeSlot}`} className="grid-cell">
+                                    <div key={`${date}-${timeSlot}`} className="grid-cell">
                                         {event && (
-                                            <div className={`course-card ${getEventTypeClass(event["Catégorie d'événement"])}`}>
-                                                <div className="course-title">{event.Matière}</div>
-                                                <div className="course-type">{event["Catégorie d'événement"]}</div>
-                                                {event.Personnel && (
-                                                    <div className="course-details">{event.Personnel}</div>
+                                            <div className={`course-card ${getEventTypeClass(event.Type)}`}>
+                                                <div className="course-title">{event.Matiere}</div>
+                                                <div className="course-type">{event.Type}</div>
+                                                {event.Prof && (
+                                                    <div className="course-details">{event.Prof}</div>
                                                 )}
                                                 {event.Salle && (
                                                     <div className="course-location">{event.Salle}</div>
