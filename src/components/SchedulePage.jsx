@@ -177,116 +177,83 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
         return date.toDateString() === today.toDateString();
     };
 
-    const renderDaySchedule = (date, events) => (
-        <div key={date} className={`schedule-day ${isToday(date) ? 'today' : ''}`}>
-            <h2>{formatDisplayDate(date)}</h2>
-            <div className="schedule-events">
-                {events
-                    .sort((a, b) => {
-                        const timeA = a.Heure.split(' ')[1].split('-')[0];
-                        const timeB = b.Heure.split(' ')[1].split('-')[0];
-                        return timeA.localeCompare(timeB);
-                    })
-                    .map((event, index) => (
-                        <div 
-                            key={`${date}-${index}`}
-                            className={`schedule-event ${getEventTypeClass(event["Catégorie d'événement"])}`}
-                        >
-                            <div className="event-time">
-                                {formatTime(event.Heure)}
-                            </div>
-                            <div className="event-details">
-                                <div className="event-header">
-                                    <span className="event-subject">
-                                        {event.Matière}
-                                        <span className="event-type">
-                                            {event["Catégorie d'événement"]}
-                                        </span>
-                                    </span>
-                                </div>
-                                <div className="event-info">
-                                    {event.Personnel && (
-                                        <span className="event-teacher">
-                                            👤 {event.Personnel}
-                                        </span>
-                                    )}
-                                    {event.Salle && (
-                                        <span className="event-location">
-                                            🏢 {event.Salle}
-                                        </span>
-                                    )}
-                                    {event.Groupe && (
-                                        <span className="event-group">
-                                            👥 {event.Groupe}
-                                        </span>
-                                    )}
-                                </div>
-                                {event.Remarques && (
-                                    <div className="event-notes">
-                                        📝 {event.Remarques}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-            </div>
-        </div>
-    );
+    // Créneaux horaires fixes
+    const timeSlots = [
+        "08:00-09:30",
+        "09:45-11:15",
+        "11:30-13:00",
+        "13:15-14:45",
+        "15:00-16:30",
+        "16:45-18:15",
+        "18:30-20:00"
+    ];
 
-    const renderSchedule = () => {
+    const weekDays = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
+
+    const renderGrid = () => {
         if (!schedule || !Array.isArray(schedule)) return null;
-        
+
         const groupedEvents = groupByDay(schedule);
-        const days = Object.entries(groupedEvents)
-            .sort(([dateA], [dateB]) => {
-                const [dayA, monthA, yearA] = dateA.split('/');
-                const [dayB, monthB, yearB] = dateB.split('/');
-                const dateObjA = new Date(`${yearA}-${monthA}-${dayA}`);
-                const dateObjB = new Date(`${yearB}-${monthB}-${dayB}`);
-                return dateObjA - dateObjB;
-            });
-
-        if (isMobile) {
-            if (days.length === 0) return null;
-            
-            const currentDay = days[currentDayIndex];
-            if (!currentDay) return null;
-
-            return (
-                <>
-                    <div className="mobile-day-selector">
-                        <button className="day-nav-button" onClick={() => navigateDay(-1)}>
-                            ←
-                        </button>
-                        <span className="current-day">
-                            {formatDisplayDate(currentDay[0])}
-                        </span>
-                        <button className="day-nav-button" onClick={() => navigateDay(1)}>
-                            →
-                        </button>
-                    </div>
-                    {renderDaySchedule(currentDay[0], currentDay[1])}
-                </>
-            );
-        }
 
         return (
-            <div className="schedule-week">
-                {days.map(([date, events]) => renderDaySchedule(date, events))}
+            <div className="schedule-grid-container">
+                <div className="schedule-grid">
+                    {/* En-tête avec les jours */}
+                    <div className="grid-header">Horaire</div>
+                    {weekDays.map(day => (
+                        <div key={day} className={`grid-header ${isToday(day) ? 'today' : ''}`}>
+                            {day}
+                        </div>
+                    ))}
+
+                    {/* Grille des créneaux horaires */}
+                    {timeSlots.map(timeSlot => (
+                        <React.Fragment key={timeSlot}>
+                            <div className="time-slot">{timeSlot}</div>
+                            {weekDays.map(day => {
+                                const dayEvents = groupedEvents[day] || [];
+                                const event = dayEvents.find(e => e.Heure.split(' ')[1] === timeSlot);
+                                
+                                return (
+                                    <div key={`${day}-${timeSlot}`} className="grid-cell">
+                                        {event && (
+                                            <div className={`course-card ${getEventTypeClass(event["Catégorie d'événement"])}`}>
+                                                <div className="course-title">{event.Matière}</div>
+                                                <div className="course-type">{event["Catégorie d'événement"]}</div>
+                                                {event.Personnel && (
+                                                    <div className="course-details">{event.Personnel}</div>
+                                                )}
+                                                {event.Salle && (
+                                                    <div className="course-location">{event.Salle}</div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </React.Fragment>
+                    ))}
+                </div>
             </div>
         );
     };
 
     return (
         <div className="schedule-page">
-            <div className="schedule-header">
-                <button className="back-button" onClick={onBack}>← Retour</button>
-                <h1>Emploi du temps</h1>
+            <header className="schedule-header">
+                <div className="schedule-header-content">
+                    <div className="schedule-header-top">
+                        <div className="schedule-title">
+                            <button className="back-button" onClick={onBack}>
+                                ←
+                            </button>
+                            <h1>Emploi du temps</h1>
+                        </div>
+                    </div>
 
-                <form className="schedule-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>
-                            Formation :
+                    <form className="schedule-controls" onSubmit={handleSubmit}>
+                        <div className="control-group">
+                            <label>Formation</label>
                             <select 
                                 value={selectedClass} 
                                 onChange={(e) => setSelectedClass(e.target.value)}
@@ -295,46 +262,41 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
                                     <option key={c} value={c}>{c}</option>
                                 ))}
                             </select>
-                        </label>
-                    </div>
-
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>
-                                Du :
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                />
-                            </label>
                         </div>
-                        <div className="form-group">
-                            <label>
-                                Au :
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    min={startDate}
-                                />
-                            </label>
-                        </div>
-                    </div>
 
-                    <div className="week-navigation">
-                        <button type="button" className="nav-button prev" onClick={handlePrevWeek}>
-                            ← Semaine précédente
-                        </button>
-                        <button type="submit" className="primary-button">
-                            Actualiser
-                        </button>
-                        <button type="button" className="nav-button next" onClick={handleNextWeek}>
-                            Semaine suivante →
-                        </button>
-                    </div>
-                </form>
-            </div>
+                        <div className="control-group">
+                            <label>Date de début</label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="control-group">
+                            <label>Date de fin</label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                min={startDate}
+                            />
+                        </div>
+
+                        <div className="schedule-navigation">
+                            <button type="button" className="nav-button" onClick={handlePrevWeek}>
+                                ← Semaine précédente
+                            </button>
+                            <button type="submit" className="refresh-button">
+                                Actualiser
+                            </button>
+                            <button type="button" className="nav-button" onClick={handleNextWeek}>
+                                Semaine suivante →
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </header>
 
             {error && (
                 <div className="error-message">
@@ -351,7 +313,7 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
                         Chargement de l'emploi du temps...
                     </div>
                 ) : schedule && Array.isArray(schedule) && schedule.length > 0 ? (
-                    renderSchedule()
+                    renderGrid()
                 ) : !error && (
                     <div className="no-schedule">
                         Aucun cours programmé pour cette période
