@@ -17,9 +17,22 @@ function SchedulePage({ schedule, onBack, onRefresh, loading, error }) {
     };
 
     const { start: defaultStart, end: defaultEnd } = getDefaultDates();
-    const [selectedClass, setSelectedClass] = useState('INF1-B1')
+    // Utiliser localStorage pour initialiser la classe
+    const [selectedClass, setSelectedClass] = useState(() => {
+        return localStorage.getItem('selectedClass') || 'INF1-B1'
+    })
     const [startDate, setStartDate] = useState(defaultStart)
     const [endDate, setEndDate] = useState(defaultEnd)
+
+    // Sauvegarder la classe sélectionnée dans localStorage
+    useEffect(() => {
+        localStorage.setItem('selectedClass', selectedClass)
+    }, [selectedClass])
+
+    // Charger l'EDT au montage du composant
+    useEffect(() => {
+        onRefresh(selectedClass, startDate, endDate)
+    }, []) // Se déclenche uniquement au montage
 
     const handleNextWeek = () => {
         const start = new Date(startDate);
