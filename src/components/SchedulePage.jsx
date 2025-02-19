@@ -31,10 +31,33 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
     const [selectedDepartment, setSelectedDepartment] = useState('INFO');
     const [groupeLocal, setGroupeLocal] = useState(groupe || AVAILABLE_GROUPS.INFO[0]);
 
+    const formatEventData = (rawEvents) => {
+        return rawEvents.map(event => {
+            const [date, time] = event.Heure.split(' ');
+            const [startTime, endTime] = time.split('-');
+            const [day, month, year] = date.split('/');
+            
+            // Créer les timestamps
+            const start = new Date(`${year}-${month}-${day}T${startTime}:00`);
+            const end = new Date(`${year}-${month}-${day}T${endTime}:00`);
+
+            return {
+                start,
+                end,
+                summary: Array.isArray(event.Matière) ? event.Matière.join(' + ') : event.Matière,
+                location: event.Salle || 'Non défini',
+                type: event['Catégorie d\'événement'],
+                staff: Array.isArray(event.Personnel) ? event.Personnel.join(', ') : event.Personnel,
+                description: event.Remarques
+            };
+        });
+    };
+
     // Mettre à jour le state schedule quand les données arrivent
     useEffect(() => {
-        if (scheduleData) {
-            setSchedule(scheduleData);
+        if (scheduleData && Array.isArray(scheduleData)) {
+            const formattedData = formatEventData(scheduleData);
+            setSchedule(formattedData);
         }
     }, [scheduleData]);
 
@@ -56,6 +79,16 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
             const isInTimeSlot = eventHour <= hour && (eventHour + eventDuration) > hour;
             return eventDay === days.indexOf(day) + 1 && isInTimeSlot;
         });
+    };
+
+    const getEventType = (type) => {
+        if (!type) return 'default';
+        if (type.includes('CM')) return 'cm';
+        if (type.includes('TD')) return 'td';
+        if (type.includes('TP')) return 'tp';
+        if (type.includes('DS')) return 'ds';
+        if (type.includes('autonomie')) return 'autonomie';
+        return 'default';
     };
 
     return (
@@ -151,12 +184,21 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
                                     return (
                                         <div key={`${day}-${hour}`} className="grid-cell">
                                             {event && (
-                                                <div className={`course-card ${getEventType(event.summary || '')}`}>
+                                                <div className={`course-card ${getEventType(event.type)}`}>
                                                     <div className="course-title">
                                                         {event.summary}
                                                     </div>
-                                                    <div className="course-location">
-                                                        {event.location}
+                                                    <div className="course-details">
+                                                        {event.location && (
+                                                            <div className="course-location">
+                                                                {event.location}
+                                                            </div>
+                                                        )}
+                                                        {event.staff && (
+                                                            <div className="course-staff">
+                                                                {event.staff}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             )}

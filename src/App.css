@@ -1229,3 +1229,40 @@
     color: #e2e8f0;
     padding: 0.5rem;
 }
+
+.course-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.course-staff {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.course-card.cm { 
+    background: rgba(59, 130, 246, 0.1); 
+    border-left: 3px solid rgb(59, 130, 246);
+}
+
+.course-card.td { 
+    background: rgba(34, 197, 94, 0.1); 
+    border-left: 3px solid rgb(34, 197, 94);
+}
+
+.course-card.tp { 
+    background: rgba(249, 115, 22, 0.1); 
+    border-left: 3px solid rgb(249, 115, 22);
+}
+
+.course-card.ds { 
+    background: rgba(239, 68, 68, 0.1); 
+    border-left: 3px solid rgb(239, 68, 68);
+}
+
+.course-card.autonomie { 
+    background: rgba(168, 85, 247, 0.1); 
+    border-left: 3px solid rgb(168, 85, 247);
+}
