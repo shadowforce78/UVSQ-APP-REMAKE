@@ -92,15 +92,38 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
     };
 
     const getEventForTimeSlot = (day, hour) => {
-        return schedule.find(event => {
+        const dayEvents = schedule.filter(event => {
             const eventDate = new Date(event.start);
-            const eventDay = eventDate.getDay();
-            const eventHour = eventDate.getHours();
-            const eventDuration = (new Date(event.end) - new Date(event.start)) / (1000 * 60 * 60);
+            return eventDate.getDay() === days.indexOf(day) + 1;
+        });
+
+        // Fusionner les événements consécutifs avec les mêmes propriétés
+        const mergedEvents = dayEvents.reduce((acc, event) => {
+            const lastEvent = acc[acc.length - 1];
             
-            // Vérifier si l'événement commence à cette heure ou est en cours
-            const isInTimeSlot = eventHour <= hour && (eventHour + eventDuration) > hour;
-            return eventDay === days.indexOf(day) + 1 && isInTimeSlot;
+            if (lastEvent &&
+                lastEvent.summary === event.summary &&
+                lastEvent.location === event.location &&
+                lastEvent.staff === event.staff &&
+                new Date(lastEvent.end).getTime() === new Date(event.start).getTime()) {
+                // Fusionner avec l'événement précédent
+                lastEvent.end = event.end;
+                return acc;
+            }
+            
+            // Ajouter comme nouvel événement
+            acc.push({ ...event });
+            return acc;
+        }, []);
+
+        // Trouver l'événement qui couvre l'heure actuelle
+        return mergedEvents.find(event => {
+            const eventStart = new Date(event.start);
+            const eventEnd = new Date(event.end);
+            const slotTime = new Date(eventStart);
+            slotTime.setHours(hour, 0, 0, 0);
+            
+            return slotTime >= eventStart && slotTime < eventEnd;
         });
     };
 
@@ -112,6 +135,23 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
         if (type.includes('DS')) return 'ds';
         if (type.includes('autonomie')) return 'autonomie';
         return 'default';
+    };
+
+    const getEventStyle = (event) => {
+        if (!event) return {};
+        
+        const startHour = new Date(event.start).getHours();
+        const endHour = new Date(event.end).getHours();
+        const durationHours = endHour - startHour + (new Date(event.end).getMinutes() > 0 ? 1 : 0);
+        
+        return {
+            height: `${durationHours * 60}px`,
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            zIndex: 1
+        };
     };
 
     return (
@@ -201,10 +241,16 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
                                 </div>
                                 {days.map(day => {
                                     const event = getEventForTimeSlot(day, hour);
+                                    const isFirstHourOfEvent = event && 
+                                        new Date(event.start).getHours() === hour;
+
                                     return (
                                         <div key={`${day}-${hour}`} className="grid-cell">
-                                            {event && (
-                                                <div className={`course-card ${getEventType(event.type)}`}>
+                                            {isFirstHourOfEvent && (
+                                                <div 
+                                                    className={`course-card ${getEventType(event.type)}`}
+                                                    style={getEventStyle(event)}
+                                                >
                                                     <div className="course-title">
                                                         {event.summary}
                                                     </div>
