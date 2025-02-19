@@ -1197,3 +1197,35 @@
         font-size: 0.9rem;
     }
 }
+
+.department-select,
+.group-select {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(100, 108, 255, 0.2);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.department-select:hover,
+.group-select:hover {
+    border-color: rgba(100, 108, 255, 0.4);
+}
+
+.department-select:focus,
+.group-select:focus {
+    border-color: #646cff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.2);
+}
+
+.department-select option,
+.group-select option {
+    background: #1a1a1a;
+    color: #e2e8f0;
+    padding: 0.5rem;
+}
