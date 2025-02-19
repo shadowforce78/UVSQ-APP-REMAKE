@@ -28,8 +28,31 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date(new Date().setDate(new Date().getDate() + 14)));
     const [schedule, setSchedule] = useState([]);
-    const [selectedDepartment, setSelectedDepartment] = useState('INFO');
-    const [groupeLocal, setGroupeLocal] = useState(groupe || AVAILABLE_GROUPS.INFO[0]);
+    
+    // Initialiser avec la valeur du localStorage ou la valeur par défaut
+    const savedDepartment = localStorage.getItem('selectedDepartment') || 'INFO';
+    const savedGroup = localStorage.getItem('selectedGroup') || groupe || AVAILABLE_GROUPS.INFO[0];
+    
+    const [selectedDepartment, setSelectedDepartment] = useState(savedDepartment);
+    const [groupeLocal, setGroupeLocal] = useState(savedGroup);
+
+    // Sauvegarder dans le localStorage quand le département change
+    const handleDepartmentChange = (e) => {
+        const newDepartment = e.target.value;
+        setSelectedDepartment(newDepartment);
+        localStorage.setItem('selectedDepartment', newDepartment);
+        
+        const newGroup = AVAILABLE_GROUPS[newDepartment][0];
+        setGroupeLocal(newGroup);
+        localStorage.setItem('selectedGroup', newGroup);
+    };
+
+    // Sauvegarder dans le localStorage quand le groupe change
+    const handleGroupChange = (e) => {
+        const newGroup = e.target.value;
+        setGroupeLocal(newGroup);
+        localStorage.setItem('selectedGroup', newGroup);
+    };
 
     const formatEventData = (rawEvents) => {
         return rawEvents.map(event => {
@@ -107,10 +130,7 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
                             <label>Département</label>
                             <select
                                 value={selectedDepartment}
-                                onChange={(e) => {
-                                    setSelectedDepartment(e.target.value);
-                                    setGroupeLocal(AVAILABLE_GROUPS[e.target.value][0]);
-                                }}
+                                onChange={handleDepartmentChange}
                                 className="department-select"
                             >
                                 {Object.keys(AVAILABLE_GROUPS).map(dept => (
@@ -122,7 +142,7 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
                             <label>Groupe</label>
                             <select
                                 value={groupeLocal}
-                                onChange={(e) => setGroupeLocal(e.target.value)}
+                                onChange={handleGroupChange}
                                 className="group-select"
                             >
                                 {AVAILABLE_GROUPS[selectedDepartment].map(group => (
