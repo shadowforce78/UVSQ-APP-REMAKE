@@ -17,42 +17,40 @@ function App() {
 	const [scheduleLoading, setScheduleLoading] = useState(false);
 	const [scheduleError, setScheduleError] = useState(null);
 
-	const fetchSchedule = async (userData) => {
+	const fetchSchedule = async (groupe, start, end) => {
 		try {
 			setScheduleLoading(true);
 			setScheduleError(null);
 			
-			// Formater les dates au format YYYY-MM-DD
+			// Formater la classe et retirer les espaces
+			const classe = groupe.replace(/\s+/g, '');
+			
+			// Formater les dates au format attendu par l'API (DD-MM-YYYY)
 			const formatDate = (date) => {
-				return date.toISOString().split('T')[0];
+				const d = new Date(date);
+				const day = String(d.getDate()).padStart(2, '0');
+				const month = String(d.getMonth() + 1).padStart(2, '0');
+				const year = d.getFullYear();
+				return `${day}-${month}-${year}`;
 			};
 
-			const today = new Date();
-			const start = formatDate(today);
-			const end = formatDate(new Date(today.setDate(today.getDate() + 14)));
-
-			// Extraire et formater le nom de la classe (enlever les espaces)
-			const classe = userData.relevé.formation.acronyme.replace(/\s+/g, '');
-
-			// Construire les credentials dans le format requis
-			const credentials = `${classe}+${start}+${end}`;
-
+			const startStr = formatDate(start);
+			const endStr = formatDate(end);
+			
+			const credentials = `${classe}+${startStr}+${endStr}`;
+			
 			const response = await fetch(
 				`http://localhost:3001/api/schedule/${credentials}`
 			);
 
 			if (!response.ok) {
-				throw new Error('Erreur de chargement EDT');
+				throw new Error('Erreur de chargement de l\'emploi du temps');
 			}
 
 			const data = await response.json();
-			if (!Array.isArray(data)) {
-				throw new Error('Format de données invalide');
-			}
-
 			setScheduleData(data);
+			
 		} catch (err) {
-			console.error('Erreur chargement EDT:', err);
 			setScheduleError(err.message);
 		} finally {
 			setScheduleLoading(false);
@@ -149,11 +147,12 @@ function App() {
 				/>;
 			case 'schedule':
 				return <SchedulePage 
+					groupe={userData.relevé?.formation?.acronyme}
 					schedule={scheduleData}
 					loading={scheduleLoading}
 					error={scheduleError}
 					onBack={() => setCurrentPage('home')}
-					onRefresh={handleScheduleRefresh}
+					onRefresh={fetchSchedule}
 				/>;
 			case 'absences':
 				return <AbsencesPage 

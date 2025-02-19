@@ -17,6 +17,7 @@
     "mongoose": "^8.10.1",
     "node-fetch": "^3.3.2",
     "react": "^18.2.0",
+    "react-datepicker": "^5.1.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {

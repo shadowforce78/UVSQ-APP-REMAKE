@@ -18,21 +18,20 @@ function BulletinPage({ userData, onBack }) {
 
             <h1>Bulletin de notes - {formation?.titre}</h1>
             {/* <h2>{semestre?.situation}</h2> */}
-
             <div className="bulletin">
                 {Object.entries(ues || {}).map(([ueId, ue]) => (
-                    <div key={ueId} className="ue-card" style={{borderColor: ue.color}}>
-                        <h3 style={{color: ue.color}}>{ue.titre}</h3>
+                    <div key={ueId} className="ue-card" style={{ borderColor: ue.color }}>
+                        <h3 style={{ color: ue.color }}>{ue.titre}</h3>
                         <p className="ue-moyenne">
                             Moyenne : <strong>{ue.moyenne.value}</strong>
                             {ue.moyenne.rang && <span className="rang">Rang : {ue.moyenne.rang}/{ue.moyenne.total}</span>}
                         </p>
-                        
+
                         <div className="modules">
                             <h4>Ressources</h4>
                             {Object.entries(ue.ressources || {}).map(([resId, res]) => (
                                 <div key={resId}>
-                                    <div 
+                                    <div
                                         className={`module-item ${selectedResource === resId ? 'selected' : ''}`}
                                         onClick={() => handleResourceClick(resId)}
                                     >
