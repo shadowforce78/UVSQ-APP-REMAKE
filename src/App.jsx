@@ -140,19 +140,19 @@ function App() {
 
 	if (userData) {
 		switch(currentPage) {
-			case 'bulletin':
-				return <BulletinPage 
-					userData={userData} 
-					onBack={() => setCurrentPage('home')} 
-				/>;
 			case 'schedule':
 				return <SchedulePage 
 					groupe={userData.relevé?.formation?.acronyme}
-					schedule={scheduleData}
+					schedule={scheduleData}  // Passer les données de l'EDT
 					loading={scheduleLoading}
 					error={scheduleError}
 					onBack={() => setCurrentPage('home')}
 					onRefresh={fetchSchedule}
+				/>;
+			case 'bulletin':
+				return <BulletinPage 
+					userData={userData} 
+					onBack={() => setCurrentPage('home')} 
 				/>;
 			case 'absences':
 				return <AbsencesPage 

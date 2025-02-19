@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { fr } from 'date-fns/locale';
@@ -24,12 +24,19 @@ const AVAILABLE_GROUPS = {
     ]
 };
 
-function SchedulePage({ onBack, groupe, onRefresh, loading, error }) {
+function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: scheduleData }) {
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date(new Date().setDate(new Date().getDate() + 14)));
     const [schedule, setSchedule] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState('INFO');
     const [groupeLocal, setGroupeLocal] = useState(groupe || AVAILABLE_GROUPS.INFO[0]);
+
+    // Mettre à jour le state schedule quand les données arrivent
+    useEffect(() => {
+        if (scheduleData) {
+            setSchedule(scheduleData);
+        }
+    }, [scheduleData]);
 
     const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
     const timeSlots = Array.from({ length: 24 }, (_, i) => i + 8).filter(h => h >= 8 && h <= 19);
@@ -39,12 +46,15 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error }) {
     };
 
     const getEventForTimeSlot = (day, hour) => {
-        // Logique pour trouver l'événement correspondant au créneau horaire
         return schedule.find(event => {
             const eventDate = new Date(event.start);
             const eventDay = eventDate.getDay();
             const eventHour = eventDate.getHours();
-            return eventDay === days.indexOf(day) + 1 && eventHour === hour;
+            const eventDuration = (new Date(event.end) - new Date(event.start)) / (1000 * 60 * 60);
+            
+            // Vérifier si l'événement commence à cette heure ou est en cours
+            const isInTimeSlot = eventHour <= hour && (eventHour + eventDuration) > hour;
+            return eventDay === days.indexOf(day) + 1 && isInTimeSlot;
         });
     };
 
@@ -136,20 +146,23 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error }) {
                                 <div className="time-slot">
                                     {formatTime(hour)}
                                 </div>
-                                {days.map(day => (
-                                    <div key={`${day}-${hour}`} className="grid-cell">
-                                        {getEventForTimeSlot(day, hour) && (
-                                            <div className="course-card">
-                                                <div className="course-title">
-                                                    {getEventForTimeSlot(day, hour).summary}
+                                {days.map(day => {
+                                    const event = getEventForTimeSlot(day, hour);
+                                    return (
+                                        <div key={`${day}-${hour}`} className="grid-cell">
+                                            {event && (
+                                                <div className={`course-card ${getEventType(event.summary || '')}`}>
+                                                    <div className="course-title">
+                                                        {event.summary}
+                                                    </div>
+                                                    <div className="course-location">
+                                                        {event.location}
+                                                    </div>
                                                 </div>
-                                                <div className="course-location">
-                                                    {getEventForTimeSlot(day, hour).location}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </React.Fragment>
                         ))}
                     </div>
