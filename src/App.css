@@ -921,42 +921,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
-  align-items: end;
-}
-
-.control-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.control-group label {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.control-group select,
-.control-group input {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(100, 108, 255, 0.2);
-  border-radius: 8px;
-  padding: 0.75rem;
-  color: #e2e8f0;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-}
-
-.control-group select:hover,
-.control-group input:hover {
-  border-color: rgba(100, 108, 255, 0.4);
-}
-
-.control-group select:focus,
-.control-group input:focus {
-  border-color: #646cff;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.2);
+  align-items: center; /* Changé de 'end' à 'center' pour un meilleur alignement */
 }
 
 .schedule-navigation {
@@ -1268,4 +1233,45 @@
 .course-card.autonomie { 
     background: rgba(168, 85, 247, 0.1); 
     border-left: 3px solid rgb(168, 85, 247);
+}
+
+.week-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    width: 100%;
+    grid-column: 1 / -1; /* Pour que la navigation prenne toute la largeur */
+}
+
+.nav-button {
+    background: rgba(15, 23, 42, 0.8);
+    color: #8f95ff;
+    border: 1px solid rgba(100, 108, 255, 0.2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    flex: 1;
+    max-width: 200px;
+}
+
+.nav-button:hover:not(:disabled) {
+    background: rgba(100, 108, 255, 0.1);
+    border-color: rgba(100, 108, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.nav-button.prev:hover:not(:disabled) {
+    transform: translateX(-5px);
+}
+
+.nav-button.next:hover:not(:disabled) {
+    transform: translateX(5px);
 }

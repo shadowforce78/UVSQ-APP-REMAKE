@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
+// Retirer l'import de DatePicker car on ne l'utilise plus
+// import DatePicker from 'react-datepicker';
+// import "react-datepicker/dist/react-datepicker.css";
 import { fr } from 'date-fns/locale';
 
 const AVAILABLE_GROUPS = {
@@ -25,10 +26,26 @@ const AVAILABLE_GROUPS = {
 };
 
 function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: scheduleData }) {
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date(new Date().setDate(new Date().getDate() + 14)));
-    const [schedule, setSchedule] = useState([]);
-    
+    // Fonction pour obtenir le lundi de la semaine courante
+    const getMonday = (d) => {
+        const date = new Date(d);
+        const day = date.getDay();
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Ajuster quand c'est dimanche
+        return new Date(date.setDate(diff));
+    };
+
+    // Fonction pour obtenir le vendredi de la même semaine
+    const getFriday = (monday) => {
+        const friday = new Date(monday);
+        friday.setDate(monday.getDate() + 4);
+        return friday;
+    };
+
+    // Initialiser les dates au lundi et vendredi de la semaine courante
+    const [startDate, setStartDate] = useState(getMonday(new Date()));
+    const [endDate, setEndDate] = useState(getFriday(getMonday(new Date())));
+    const [schedule, setSchedule] = useState([]); // Ajout du state manquant
+
     // Initialiser avec la valeur du localStorage ou la valeur par défaut
     const savedDepartment = localStorage.getItem('selectedDepartment') || 'INFO';
     const savedGroup = localStorage.getItem('selectedGroup') || groupe || AVAILABLE_GROUPS.INFO[0];
@@ -154,6 +171,21 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
         };
     };
 
+    const changeWeek = (direction) => {
+        const oneWeek = 7 * 24 * 60 * 60 * 1000; // une semaine en millisecondes
+        const newStartDate = new Date(startDate.getTime() + (direction * oneWeek));
+        const newEndDate = getFriday(newStartDate);
+        
+        setStartDate(newStartDate);
+        setEndDate(newEndDate);
+        onRefresh(groupeLocal, newStartDate, newEndDate);
+    };
+
+    // Déclencher le chargement initial de l'EDT
+    useEffect(() => {
+        onRefresh(groupeLocal, startDate, endDate);
+    }, []); // S'exécute une seule fois au montage du composant
+
     return (
         <div className="schedule-page">
             <div className="schedule-header">
@@ -190,26 +222,34 @@ function SchedulePage({ onBack, groupe, onRefresh, loading, error, schedule: sch
                                 ))}
                             </select>
                         </div>
-                        <div className="date-controls">
-                            <div className="control-group">
-                                <label>Du</label>
-                                <DatePicker
-                                    selected={startDate}
-                                    onChange={date => setStartDate(date)}
-                                    locale={fr}
-                                    dateFormat="dd/MM/yyyy"
-                                />
-                            </div>
-                            <div className="control-group">
-                                <label>Au</label>
-                                <DatePicker
-                                    selected={endDate}
-                                    onChange={date => setEndDate(date)}
-                                    locale={fr}
-                                    dateFormat="dd/MM/yyyy"
-                                    minDate={startDate}
-                                />
-                            </div>
+                        <div className="week-navigation">
+                            <button 
+                                className="nav-button prev"
+                                onClick={() => changeWeek(-1)}
+                                disabled={loading}
+                            >
+                                ← Semaine précédente
+                            </button>
+                            <button 
+                                className="nav-button"
+                                onClick={() => {
+                                    const monday = getMonday(new Date());
+                                    const friday = getFriday(monday);
+                                    setStartDate(monday);
+                                    setEndDate(friday);
+                                    onRefresh(groupeLocal, monday, friday);
+                                }}
+                                disabled={loading}
+                            >
+                                Semaine actuelle
+                            </button>
+                            <button 
+                                className="nav-button next"
+                                onClick={() => changeWeek(1)}
+                                disabled={loading}
+                            >
+                                Semaine suivante →
+                            </button>
                         </div>
                         <button 
                             className="refresh-button"
