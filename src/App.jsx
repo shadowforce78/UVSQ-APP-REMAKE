@@ -17,6 +17,28 @@ function App() {
 	const [scheduleLoading, setScheduleLoading] = useState(false);
 	const [scheduleError, setScheduleError] = useState(null);
 
+	// Vérifier si l'utilisateur est déjà connecté au chargement
+	useEffect(() => {
+		const savedUserData = localStorage.getItem('userData');
+		if (savedUserData) {
+			try {
+				setUserData(JSON.parse(savedUserData));
+			} catch (e) {
+				console.error("Erreur lors du chargement des données utilisateur:", e);
+				localStorage.removeItem('userData');
+			}
+		}
+	}, []);
+
+	// Fonction de déconnexion
+	const handleLogout = () => {
+		setUserData(null);
+		localStorage.removeItem('userData');
+		setCurrentPage('home');
+		setStudentId('');
+		setPassword('');
+	};
+
 	const fetchSchedule = async (userData) => {
 		try {
 			setScheduleLoading(true);
@@ -130,6 +152,10 @@ function App() {
 
 			const data = await response.json()
 			setUserData(data)
+			
+			// Sauvegarder les données de l'utilisateur dans localStorage
+			localStorage.setItem('userData', JSON.stringify(data));
+			
 			console.log('Données reçues:', data)
 			// Ici vous pouvez gérer les données reçues
 
@@ -166,35 +192,82 @@ function App() {
 					onShowBulletin={() => setCurrentPage('bulletin')}
 					onShowSchedule={() => setCurrentPage('schedule')}
 					onShowAbsences={() => setCurrentPage('absences')}
+					onLogout={handleLogout}
 				/>;
 		}
 	}
 
 	return (
-		<div>
-			<h1>Connexion UVSQ</h1>
-			<form className="login-form" onSubmit={handleSubmit}>
-				<input
-					type="text"
-					placeholder="Numéro étudiant"
-					value={studentId}
-					onChange={(e) => setStudentId(e.target.value)}
-					disabled={loading}
-					required
-				/>
-				<input
-					type="password"
-					placeholder="Mot de passe"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					disabled={loading}
-					required
-				/>
-				<button type="submit" disabled={loading}>
-					{loading ? 'Connexion...' : 'Se connecter'}
-				</button>
-				{error && <p style={{ color: 'red' }}>{error}</p>}
-			</form>
+		<div className="login-container">
+			<div className="login-card">
+				<div className="login-header">
+					<h1>UVSQ Connect</h1>
+					<p className="login-subtitle">Accédez à votre espace étudiant</p>
+				</div>
+				
+				<form className="login-form" onSubmit={handleSubmit}>
+					<div className="form-group">
+						<label htmlFor="studentId">Numéro étudiant</label>
+						<div className="input-with-icon">
+							<span className="input-icon">👤</span>
+							<input
+								id="studentId"
+								type="text"
+								placeholder="Ex: 12345678"
+								value={studentId}
+								onChange={(e) => setStudentId(e.target.value)}
+								disabled={loading}
+								required
+							/>
+						</div>
+					</div>
+					
+					<div className="form-group">
+						<label htmlFor="password">Mot de passe</label>
+						<div className="input-with-icon">
+							<span className="input-icon">🔒</span>
+							<input
+								id="password"
+								type="password"
+								placeholder="Votre mot de passe"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								disabled={loading}
+								required
+							/>
+						</div>
+					</div>
+					
+					<button 
+						type="submit" 
+						className="login-button" 
+						disabled={loading}
+					>
+						{loading ? (
+							<>
+								<span className="spinner"></span>
+								<span>Connexion en cours...</span>
+							</>
+						) : (
+							<>
+								<span className="button-icon">🔑</span>
+								<span>Se connecter</span>
+							</>
+						)}
+					</button>
+					
+					{error && (
+						<div className="error-message">
+							<span className="error-icon">⚠️</span>
+							<span>{error}</span>
+						</div>
+					)}
+				</form>
+				
+				<div className="login-footer">
+					<p>&copy; {new Date().getFullYear()} - Université de Versailles Saint-Quentin-en-Yvelines</p>
+				</div>
+			</div>
 		</div>
 	)
 }
