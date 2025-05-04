@@ -12,6 +12,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/uvsq/, '')
       }
-    }
+    },
+    allowedHosts: ['uvsq.saumondeluxe.com']
   }
 })
