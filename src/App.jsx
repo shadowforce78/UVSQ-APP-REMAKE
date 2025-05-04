@@ -39,6 +39,12 @@ function App() {
 		setPassword('');
 	};
 
+	// Ajout d'une fonction pour obtenir l'URL de base de l'API
+	const getApiBaseUrl = () => {
+		// En production, utilisez les chemins relatifs pour éviter les problèmes CORS
+		return '/api';
+	}
+
 	const fetchSchedule = async (userData) => {
 		try {
 			setScheduleLoading(true);
@@ -60,7 +66,7 @@ function App() {
 			const credentials = `${classe}+${start}+${end}`;
 
 			const response = await fetch(
-				`http://localhost:3001/api/schedule/${credentials}`
+				`${getApiBaseUrl()}/schedule/${credentials}`
 			);
 
 			if (!response.ok) {
@@ -104,11 +110,11 @@ function App() {
 			console.log('Requête EDT:', { credentials });
 
 			const response = await fetch(
-				`http://localhost:3001/api/schedule/${credentials}`
+				`${getApiBaseUrl()}/schedule/${credentials}`
 			);
 
 			const text = await response.text();
-			console.log('Réponse brute:', text);
+			// console.log('Réponse brute:', text);
 
 			if (!response.ok) {
 				throw new Error(`Erreur serveur: ${response.status}`);
@@ -143,7 +149,7 @@ function App() {
 		try {
 			const hashedPass = btoa(password) // Encodage correct en base64
 			const response = await fetch(
-				`http://localhost:3001/api/bulletin/${studentId}+${hashedPass}`
+				`${getApiBaseUrl()}/bulletin/${studentId}+${hashedPass}`
 			)
 
 			if (!response.ok) {
