@@ -134,6 +134,15 @@ function SchedulePage({ onBack }) {
     };
   }
 
+  // Fonction pour obtenir l'URL de base de l'API en fonction de l'environnement
+  function getApiBaseUrl() {
+    // En production, utiliser l'URL relative (même serveur)
+    // Sinon, utiliser localhost pour le développement
+    return window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001' 
+      : '';
+  }
+
   // Fetch schedule data from API
   async function fetchSchedule() {
     if (!selectedClass) return;
@@ -145,8 +154,9 @@ function SchedulePage({ onBack }) {
     const endDate = formatDateForAPI(currentWeek[4]);
     
     try {
-      // Utilisation du serveur Express local comme proxy
-      const response = await fetch(`http://localhost:3001/api/schedule/${selectedClass}+${startDate}+${endDate}`);
+      // Utilisation de l'URL adaptative selon l'environnement
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/schedule/${selectedClass}+${startDate}+${endDate}`);
       
       if (!response.ok) {
         throw new Error(`Erreur lors de la récupération de l'emploi du temps (${response.status})`);
