@@ -94,7 +94,7 @@ function Homepage({ userData, onShowBulletin, onShowSchedule, onShowAbsences, on
                     </div>
                 </section>
                 
-                <section className="semester-info animate-in">
+                {/* <section className="semester-info animate-in">
                     <h2>Semestre {semestre?.numero} - {semestre?.annee_universitaire}</h2>
                     <div className="progress-container">
                         <div className="progress-stats">
@@ -112,7 +112,7 @@ function Homepage({ userData, onShowBulletin, onShowSchedule, onShowAbsences, on
                             </div>
                         </div>
                     </div>
-                </section>
+                </section> */}
             </div>
             
             <footer className="homepage-footer animate-in">
