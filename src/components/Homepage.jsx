@@ -14,6 +14,9 @@ function Homepage({ userData, onShowBulletin, onShowSchedule, onShowAbsences, on
         });
     }, []);
 
+    // Vérification de sécurité pour l'accès aux données
+    const hasScheduleAccess = relevé?.formation?.acronyme;
+
     return (
         <div className="homepage-container">
             <header className="homepage-header animate-in">
@@ -74,7 +77,7 @@ function Homepage({ userData, onShowBulletin, onShowSchedule, onShowAbsences, on
                             </div>
                         </div>
                         
-                        {userData.relevé.formation.acronyme && (
+                        {hasScheduleAccess && (
                             <div className="action-card" onClick={onShowSchedule}>
                                 <div className="action-icon schedule-icon">📅</div>
                                 <div className="action-content">
