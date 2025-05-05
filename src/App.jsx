@@ -157,6 +157,12 @@ function App() {
 			}
 
 			const data = await response.json()
+			
+			// Vérifier si la réponse contient un message d'erreur
+			if (data.error) {
+				throw new Error(data.error)
+			}
+			
 			setUserData(data)
 			
 			// Sauvegarder les données de l'utilisateur dans localStorage
