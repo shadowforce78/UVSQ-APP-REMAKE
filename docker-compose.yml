@@ -1,0 +1,30 @@
+services:
+  uvsq-backend:
+    build: ./server
+    container_name: uvsq-backend
+    restart: unless-stopped
+    expose:
+      - "3001"
+    environment:
+      VIRTUAL_HOST: api.uvsq.saumondeluxe.com
+      LETSENCRYPT_HOST: api.uvsq.saumondeluxe.com
+      LETSENCRYPT_EMAIL: planque.adam@gmail.com
+    networks:
+      - proxy-tier
+
+  uvsq-frontend:
+    build: ./client
+    container_name: uvsq-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+    environment:
+      VIRTUAL_HOST: uvsq.saumondeluxe.com
+      LETSENCRYPT_HOST: uvsq.saumondeluxe.com
+      LETSENCRYPT_EMAIL: planque.adam@gmail.com
+    networks:
+      - proxy-tier
+
+networks:
+  proxy-tier:
+    external: true
