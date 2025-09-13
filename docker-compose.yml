@@ -29,8 +29,6 @@ services:
     restart: unless-stopped
     depends_on:
       - uvsq-backend
-    ports:
-      - "80:80"
     environment:
       - VIRTUAL_HOST=uvsq.saumondeluxe.com
       - LETSENCRYPT_HOST=uvsq.saumondeluxe.com
