@@ -13,7 +13,7 @@ services:
       - proxy-tier
 
   uvsq-frontend:
-    build: ./client
+    build: ./src
     container_name: uvsq-frontend
     restart: unless-stopped
     expose:
