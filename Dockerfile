@@ -3,7 +3,8 @@ FROM node:20-alpine AS build
 WORKDIR /app
 # Copier uniquement les manifests pour tirer parti du cache
 COPY package*.json ./
-RUN npm ci
+RUN npm install --omit=dev
+
 # Copier le reste du code
 COPY . .
 # Construire (Vite sort dans dist/ par défaut)
