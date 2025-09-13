@@ -15,8 +15,7 @@ export default defineConfig({
       // Proxy pour les appels API vers le serveur backend
       '/api': {
         target: 'http://localhost:3001',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        changeOrigin: true
       }
     },
     allowedHosts: ['uvsq.saumondeluxe.com']
