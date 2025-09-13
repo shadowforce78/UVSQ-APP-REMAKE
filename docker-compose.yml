@@ -1,27 +1,40 @@
 services:
   uvsq-backend:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: uvsq-backend
     restart: unless-stopped
-    expose:
-      - "3001"
+    ports:
+      - "3001:3001"
     environment:
-      VIRTUAL_HOST: api.uvsq.saumondeluxe.com
-      LETSENCRYPT_HOST: api.uvsq.saumondeluxe.com
-      LETSENCRYPT_EMAIL: planque.adam@gmail.com
+      - NODE_ENV=production
+      - PORT=3001
+      - VIRTUAL_HOST=api.uvsq.saumondeluxe.com
+      - LETSENCRYPT_HOST=api.uvsq.saumondeluxe.com
+      - LETSENCRYPT_EMAIL=planque.adam@gmail.com
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/bulletin/test').catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     networks:
       - proxy-tier
 
   uvsq-frontend:
-    build: ./src
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: uvsq-frontend
     restart: unless-stopped
-    expose:
-      - "80"
+    depends_on:
+      - uvsq-backend
+    ports:
+      - "80:80"
     environment:
-      VIRTUAL_HOST: uvsq.saumondeluxe.com
-      LETSENCRYPT_HOST: uvsq.saumondeluxe.com
-      LETSENCRYPT_EMAIL: planque.adam@gmail.com
+      - VIRTUAL_HOST=uvsq.saumondeluxe.com
+      - LETSENCRYPT_HOST=uvsq.saumondeluxe.com
+      - LETSENCRYPT_EMAIL=planque.adam@gmail.com
     networks:
       - proxy-tier
 
