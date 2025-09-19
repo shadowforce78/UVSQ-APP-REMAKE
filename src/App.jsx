@@ -42,7 +42,7 @@ function App() {
 	// Ajout d'une fonction pour obtenir l'URL de base de l'API
 	const getApiBaseUrl = () => {
 		// En production, utilisez les chemins relatifs pour éviter les problèmes CORS
-		return '/api';
+		return 'https://api.uvsq.saumondeluxe.com/api';
 	}
 
 	const fetchSchedule = async (userData) => {
