@@ -90,10 +90,14 @@ function SchedulePage({ onBack }) {
 
     // Fonction pour parser le fichier ICS
     const parseICS = async (url) => {
+        const sameOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+        const serverProxy = sameOrigin ? `${sameOrigin.replace(/\/$/, '')}/api/ics?url=${encodeURIComponent(url)}` : `/api/ics?url=${encodeURIComponent(url)}`
         const proxies = [
-            // Essai direct d'abord
+            // Proxy côté serveur en priorité (contourne CORS en prod)
+            { url: serverProxy, name: 'server-proxy' },
+            // Essai direct ensuite (utile en local si CORS ouvert)
             { url: url, name: 'direct' },
-            // Proxies alternatifs
+            // Proxies publics en dernier recours
             { url: `https://corsproxy.io/?${encodeURIComponent(url)}`, name: 'corsproxy.io' },
             { url: `https://cors-anywhere.herokuapp.com/${url}`, name: 'cors-anywhere' },
             { url: `https://thingproxy.freeboard.io/fetch/${url}`, name: 'thingproxy' }
