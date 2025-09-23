@@ -90,11 +90,16 @@ function SchedulePage({ onBack }) {
 
     // Fonction pour parser le fichier ICS
     const parseICS = async (url) => {
-        const sameOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-        const serverProxy = sameOrigin ? `${sameOrigin.replace(/\/$/, '')}/api/ics?url=${encodeURIComponent(url)}` : `/api/ics?url=${encodeURIComponent(url)}`
+    const sameOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
+    const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:'
+    const serverProxy = sameOrigin ? `${sameOrigin.replace(/\/$/, '')}/api/ics?url=${encodeURIComponent(url)}` : `/api/ics?url=${encodeURIComponent(url)}`
+    const altApiOrigin = hostname ? `${protocol}//api.${hostname}` : ''
+    const serverProxyAlt = altApiOrigin ? `${altApiOrigin}/api/ics?url=${encodeURIComponent(url)}` : ''
         const proxies = [
             // Proxy côté serveur en priorité (contourne CORS en prod)
             { url: serverProxy, name: 'server-proxy' },
+            ...(serverProxyAlt ? [{ url: serverProxyAlt, name: 'server-proxy-alt' }] : []),
             // Essai direct ensuite (utile en local si CORS ouvert)
             { url: url, name: 'direct' },
             // Proxies publics en dernier recours
