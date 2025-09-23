@@ -1,0 +1,540 @@
+/* ===== STYLES BULLETIN PAGE - DARK THEME ===== */
+
+.bulletin-page {
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(99, 102, 241, 0.12), transparent 60%),
+              radial-gradient(1100px 500px at 100% 0%, rgba(16, 185, 129, 0.10), transparent 60%),
+              linear-gradient(180deg, #0b1220 0%, #0f172a 30%, #0b1220 100%);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--white);
+}
+
+.bulletin-page h1 {
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.bulletin {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ue-card {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  border-left: 5px solid var(--primary-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  color: var(--gray-100);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.ue-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  border-bottom: 2px solid rgba(148, 163, 184, 0.3);
+  padding-bottom: 0.5rem;
+}
+
+.ue-moyenne {
+  background: rgba(51, 65, 85, 0.8);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.ue-moyenne strong {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.rang {
+  color: var(--gray-300);
+  font-size: 0.9rem;
+  margin-left: 1rem;
+}
+
+.modules h4 {
+  color: var(--gray-200);
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.module-item {
+  background: rgba(51, 65, 85, 0.9);
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--gray-100);
+}
+
+.module-item:hover {
+  background: rgba(71, 85, 105, 0.9);
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.module-item.selected {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+/* ===== STYLES ABSENCES PAGE - DARK THEME ===== */
+
+.absences-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--white);
+}
+
+.absences-page h1 {
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.absences-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-item {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  color: var(--gray-100);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.summary-item.warning {
+  border-left: 5px solid var(--error-color);
+}
+
+.summary-item.info {
+  border-left: 5px solid var(--primary-color);
+}
+
+.summary-item strong {
+  font-size: 1.5rem;
+  color: var(--error-color);
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.no-absences {
+  background: rgba(16, 185, 129, 0.95);
+  color: var(--white);
+  padding: 2rem;
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.absences-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.day-card {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  color: var(--gray-100);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.day-card h2 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  text-transform: capitalize;
+  border-bottom: 2px solid rgba(148, 163, 184, 0.3);
+  padding-bottom: 0.5rem;
+}
+
+.sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.session-item {
+  background: rgba(51, 65, 85, 0.9);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  color: var(--gray-100);
+}
+
+.session-item.absent {
+  border-left: 4px solid var(--error-color);
+}
+
+.session-time {
+  font-weight: 600;
+  color: var(--gray-100);
+}
+
+.duration {
+  color: var(--gray-300);
+  font-size: 0.9rem;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
+
+.session-info {
+  color: var(--gray-200);
+}
+
+.teacher-name {
+  font-weight: 500;
+}
+
+
+/* Contexte commun des pages */
+.bulletin-page,
+.absences-page {
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(99, 102, 241, 0.12), transparent 60%),
+              radial-gradient(1100px 500px at 100% 0%, rgba(16, 185, 129, 0.10), transparent 60%),
+              linear-gradient(180deg, #0b1220 0%, #0f172a 30%, #0b1220 100%);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: var(--text-high);
+}
+
+.bulletin-page h1,
+.absences-page h1 {
+  color: var(--white);
+  text-align: center;
+  margin: 0 0 1.25rem 0;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-shadow: 0 2px 18px rgba(0,0,0,0.45);
+}
+
+/* Bouton retour (réutilisé par plusieurs pages) */
+.back-button {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--line);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--border-radius-lg);
+  color: var(--text-high);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  align-self: flex-start;
+}
+
+.back-button:hover {
+  background: rgba(51, 65, 85, 0.8);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+/* ===== BULLETIN ===== */
+.bulletin { display: flex; flex-direction: column; gap: 1rem; }
+
+.ue-card {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.9), rgba(15, 23, 42, 0.9));
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-lg);
+  padding: 1.25rem;
+  border-left: 5px solid var(--primary-color);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-high);
+  border: 1px solid var(--line);
+}
+
+.ue-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.85rem;
+  color: var(--primary-light);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.ue-moyenne {
+  background: rgba(30, 41, 59, 0.6);
+  padding: 0.85rem 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--line);
+}
+
+.ue-moyenne strong { font-size: 1.1rem; color: var(--primary-light); }
+.rang { color: var(--text-muted); font-size: 0.9rem; margin-left: 0.75rem; }
+
+.modules h4 {
+  color: var(--text-muted);
+  margin: 1rem 0 0.75rem 0;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.module-item {
+  background: rgba(31, 41, 55, 0.65);
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-high);
+}
+
+.module-item strong { font-weight: 800; letter-spacing: 0.2px; }
+
+.module-item:hover {
+  background: rgba(51, 65, 85, 0.7);
+  transform: translateX(4px);
+  box-shadow: var(--shadow);
+}
+
+.module-item.selected {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+/* ===== ABSENCES ===== */
+.absences-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.summary-item {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 1.1rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  color: var(--text-high);
+  border: 1px solid var(--line);
+}
+
+.summary-item.warning { border-left: 5px solid var(--error-color); }
+.summary-item.info { border-left: 5px solid var(--primary-color); }
+.summary-item strong { font-size: 1.25rem; color: #fecaca; display: block; margin-top: 0.35rem; }
+
+.no-absences {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.95), rgba(16, 185, 129, 0.95));
+  color: var(--white);
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+}
+
+.absences-container { display: flex; flex-direction: column; gap: 1rem; }
+
+.day-card {
+  background: rgba(17, 24, 39, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: var(--border-radius-lg);
+  padding: 1.1rem;
+  box-shadow: var(--shadow);
+  color: var(--text-high);
+  border: 1px solid var(--line);
+}
+
+.day-card h2 {
+  color: var(--primary-light);
+  margin-bottom: 0.85rem;
+  font-size: 1.2rem;
+  text-transform: capitalize;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+}
+
+.sessions-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.session-item {
+  background: rgba(31, 41, 55, 0.7);
+  padding: 0.9rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--text-high);
+}
+
+.session-item.absent { border-left: 4px solid var(--error-color); }
+.session-time { font-weight: 700; color: var(--text-high); }
+.duration { color: var(--text-muted); font-size: 0.9rem; margin-left: 0.35rem; }
+.session-info { color: var(--text-high); opacity: 0.9; }
+.teacher-name { font-weight: 600; }
+
+.session-status {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+}
+.session-status.warning { background: var(--error-color); color: var(--white); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .bulletin-page h1, .absences-page h1 { font-size: 2rem; }
+}
+
+@media (max-width: 768px) {
+  .bulletin-page, .absences-page { padding: 1rem; }
+  .absences-summary { grid-template-columns: 1fr; gap: 0.85rem; }
+  .session-item { grid-template-columns: 1fr; gap: 0.5rem; text-align: center; }
+  .ue-card { padding: 1rem; }
+  .ue-moyenne { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+}
+
+@media (max-width: 480px) {
+  .bulletin-page, .absences-page { padding: 0.75rem; }
+  .day-card h2 { font-size: 1.05rem; }
+  .back-button { width: 100%; text-align: center; }
+}
+.session-status {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.session-status.warning {
+  background: var(--error-color);
+  color: var(--white);
+}
+
+/* Bouton retour pour toutes les pages - DARK THEME */
+.back-button {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius-lg);
+  color: var(--white);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  align-self: flex-start;
+}
+
+.back-button:hover {
+  background: rgba(51, 65, 85, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-color: var(--primary-color);
+}
+
+/* ===== RESPONSIVE - DARK THEME ===== */
+
+@media (max-width: 768px) {
+  .bulletin-page,
+  .absences-page {
+    padding: 1rem;
+  }
+  
+  .bulletin-page h1,
+  .absences-page h1 {
+    font-size: 1.8rem;
+  }
+  
+  .absences-summary {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .session-item {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .ue-card {
+    padding: 1rem;
+  }
+  
+  .ue-moyenne {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bulletin-page,
+  .absences-page {
+    padding: 0.5rem;
+  }
+  
+  .day-card h2 {
+    font-size: 1.1rem;
+  }
+  
+  .back-button {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -1,558 +1,402 @@
-import React, { useState, useEffect } from 'react';
-import './SchedulePage.css';
+import React, { useState, useEffect } from 'react'
+import ICAL from 'ical.js'
+import ErrorBoundary from './ErrorBoundary'
 
-// Constants for event types and their colors
-const EVENT_TYPES = {
-  "Travaux Dirigés (TD)": { short: "TD", color: "#22c55e", bgColor: "rgba(34, 197, 94, 0.1)" },
-  "Cours Magistraux (CM)": { short: "CM", color: "#3b82f6", bgColor: "rgba(59, 130, 246, 0.1)" },
-  "Travaux Pratiques (TP)": { short: "TP", color: "#f97316", bgColor: "rgba(249, 115, 22, 0.1)" },
-  "DS": { short: "DS", color: "#ef4444", bgColor: "rgba(239, 68, 68, 0.1)" },
-  "Projet en autonomie": { short: "Autonomie", color: "#a855f7", bgColor: "rgba(168, 85, 247, 0.1)" },
-  "Jour férié": { short: "Férié", color: "#64748b", bgColor: "rgba(100, 116, 139, 0.1)" }
-};
-
-// Days of the week
-const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-
-// Hours range for the schedule
-const HOURS = Array.from({ length: 12 }, (_, i) => i + 8); // 8:00 to 19:00
-
-// Available groups by department
-const AVAILABLE_GROUPS = {
-  INFO: [
-      "INF1-A1", "INF1-A2", "INF1-B1", "INF1-B2",
-      "INF1-C1", "INF1-C2", "INF2-FA", "INF2-FI-A",
-      "INF2-FI-B", "INF3-FA-A", "INF3-FA-B", "INF3-FI"
-  ],
-  MMI: [
-      "MMI1-A1", "MMI1-A2", "MMI1-B1", "MMI1-B2",
-      "MMI2-A1", "MMI2-A2", "MMI2-B1", "MMI2-B2"
-  ],
-  RT: [
-      "RT1-FA", "RT1-FI-A1", "RT1-FI-A2",
-      "RT1-FI-B1", "RT1-FI-B2"
-  ],
-  GEII: [
-      "GEII1-TDA1", "GEII1-TDA2", "GEII1-TDB1",
-      "GEII1-TDB2", "GEII1-TDC", "GEII1-TP1",
-      "GEII1-TP2", "GEII1-TP3"
-  ]
-};
-
-function SchedulePage({ onBack }) {
-  const [currentWeek, setCurrentWeek] = useState(getWeekDates());
-  const [processedSchedule, setProcessedSchedule] = useState({});
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [schedule, setSchedule] = useState([]);
-  
-  // Initialisation avec les valeurs du localStorage ou valeurs par défaut
-  const [department, setDepartment] = useState(() => {
-    return localStorage.getItem('selectedDepartment') || 'INFO';
-  });
-  
-  const [selectedClass, setSelectedClass] = useState(() => {
-    const savedClass = localStorage.getItem('selectedClass');
-    const savedDept = localStorage.getItem('selectedDepartment') || 'INFO';
-    
-    // Vérifier si la classe sauvegardée appartient bien au département
-    if (savedClass && AVAILABLE_GROUPS[savedDept]?.includes(savedClass)) {
-      return savedClass;
-    }
-    
-    // Sinon, prendre la première classe du département
-    return AVAILABLE_GROUPS[savedDept][0];
-  });
-
-  // Function to get an array of dates for the current week
-  function getWeekDates() {
-    const today = new Date();
-    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    
-    // Calculate the Monday of the current week
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
-    
-    // Generate array of dates for the week (Monday to Friday)
-    return Array.from({ length: 5 }, (_, i) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + i);
-      return date;
-    });
-  }
-
-  // Function to format date to YYYY-MM-DD for API request
-  function formatDateForAPI(date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  }
-
-  // Function to get the previous week
-  function getPreviousWeek() {
-    const newWeek = currentWeek.map(date => {
-      const newDate = new Date(date);
-      newDate.setDate(date.getDate() - 7);
-      return newDate;
-    });
-    setCurrentWeek(newWeek);
-  }
-
-  // Function to get the next week
-  function getNextWeek() {
-    const newWeek = currentWeek.map(date => {
-      const newDate = new Date(date);
-      newDate.setDate(date.getDate() + 7);
-      return newDate;
-    });
-    setCurrentWeek(newWeek);
-  }
-
-  // Format a date to DD/MM/YYYY for display
-  function formatDate(date) {
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-  }
-
-  // Parse time string to get hours and minutes
-  function parseTime(timeStr) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours + minutes / 60;
-  }
-  
-  // Calculate position and height for a schedule event
-  function calculateEventStyle(timeRange) {
-    const [startTime, endTime] = timeRange.split('-');
-    const startHour = parseTime(startTime);
-    const endHour = parseTime(endTime);
-    
-    const topPercentage = ((startHour - 8) / 12) * 100; // 8 is the start hour, 12 is the total hours range
-    const heightPercentage = ((endHour - startHour) / 12) * 100;
-    
-    return {
-      top: `${topPercentage}%`,
-      height: `${heightPercentage}%`
-    };
-  }
-
-  // Fonction pour obtenir l'URL de base de l'API en fonction de l'environnement
-  function getApiBaseUrl() {
-    // En production, utiliser l'URL relative (même serveur)
-    // Sinon, utiliser localhost pour le développement
-    return window.location.hostname === 'localhost' 
-      ? 'http://localhost:3001' 
-      : '';
-  }
-
-  // Fetch schedule data from API
-  async function fetchSchedule() {
-    if (!selectedClass) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    const startDate = formatDateForAPI(currentWeek[0]);
-    const endDate = formatDateForAPI(currentWeek[4]);
-    
-    try {
-      // Utilisation de l'URL adaptative selon l'environnement
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/schedule/${selectedClass}+${startDate}+${endDate}`);
-      
-      if (!response.ok) {
-        throw new Error(`Erreur lors de la récupération de l'emploi du temps (${response.status})`);
-      }
-      
-      const data = await response.json();
-      setSchedule(data);
-    } catch (err) {
-      console.error("Erreur lors de la récupération de l'emploi du temps:", err);
-      setError(`Impossible de récupérer l'emploi du temps: ${err.message}`);
-      
-      // Utilisation de données de test si l'API n'est pas disponible
-      if (process.env.NODE_ENV === 'development') {
-        console.log("Utilisation des données de test pour le développement");
-        const testData = [
-          {"Date":"07/05/2025","Heure":"15:00-17:00","Matière":"IN2R13","Personnel":"TROTIGNON Clemence","Groupe":"INF1-B","Salle":"414 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"07/05/2025","Heure":"08:30-10:00","Matière":"IN2SA01, IN2SA02","Personnel":null,"Groupe":"INF1-B","Salle":null,"Catégorie d’événement":"Projet en autonomie","Remarques":"Salle g21 ou g23"},
-          {"Date":"07/05/2025","Heure":"10:30-12:30","Matière":"IN2R05","Personnel":"HOGUIN Fabrice","Groupe":"INF1-B","Salle":null,"Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"07/05/2025","Heure":"13:30-15:00","Matière":"IN2R09","Personnel":"OSTER Alain","Groupe":"INF1-B","Salle":"313 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"09/05/2025","Heure":"10:30-12:00","Matière":"IN2R10","Personnel":"BARREAU Sebastien","Groupe":"INF1-B","Salle":"414 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"09/05/2025","Heure":"08:30-10:30","Matière":"IN2R06","Personnel":"ZEITOUNI Karine","Groupe":"INF1-B","Salle":"G25 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"09/05/2025","Heure":"14:30-16:30","Matière":"IN2SA04","Personnel":null,"Groupe":"INF1-B","Salle":null,"Catégorie d’événement":"Projet en autonomie","Remarques":"Salle g21 ou g23"},
-          {"Date":"09/05/2025","Heure":"13:00-14:30","Matière":"IN2SA01, IN2SA02","Personnel":null,"Groupe":"INF1-B","Salle":null,"Catégorie d’événement":"Projet en autonomie","Remarques":"Salle g21 ou g23"},
-          {"Date":"05/05/2025","Heure":"14:00-15:00","Matière":"IN2R06","Personnel":"ZEITOUNI Karine","Groupe":"INF1","Salle":"Amphi B - VEL","Catégorie d’événement":"Cours Magistraux (CM)","Remarques":null},
-          {"Date":"05/05/2025","Heure":"09:00-11:00","Matière":"IN2R03","Personnel":"NETO Lucas","Groupe":"INF1-B","Salle":"I21 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"05/05/2025","Heure":"11:00-12:30","Matière":"IN2R10","Personnel":"BARREAU Sebastien","Groupe":"INF1-B","Salle":"414 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"05/05/2025","Heure":"15:00-17:30","Matière":"IN2R02","Personnel":"ROBBA Isabelle","Groupe":"INF1-B","Salle":"G26 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"06/05/2025","Heure":"12:00-13:00","Matière":"IN2SA04","Personnel":"HOGUIN Fabrice","Groupe":"INF1","Salle":"Amphi C - VEL","Catégorie d’événement":"DS","Remarques":null},
-          {"Date":"06/05/2025","Heure":"14:00-15:30","Matière":"IN2R02","Personnel":"MARTIN Yohann, ROBBA Isabelle","Groupe":"INF1-B","Salle":"G26 - VEL","Catégorie d’événement":"Travaux Pratiques (TP)","Remarques":null},
-          {"Date":"06/05/2025","Heure":"15:44-17:14","Matière":"IN2R09","Personnel":"OSTER Alain","Groupe":"INF1-B","Salle":"414 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"06/05/2025","Heure":"08:30-10:00","Matière":"IN2R09","Personnel":"OSTER Alain","Groupe":"INF1-B","Salle":"414 - VEL","Catégorie d’événement":"Travaux Dirigés (TD)","Remarques":null},
-          {"Date":"06/05/2025","Heure":"10:15-12:00","Matière":"IN2R07","Personnel":"OSTER Alain, ROBBA Isabelle","Groupe":"INF1-B","Salle":"Amphi A - VEL","Catégorie d’événement":"DS","Remarques":null},
-          {"Date":"08/05/2025","Heure":"08:00-19:00","Matière":null,"Personnel":null,"Groupe":null,"Salle":null,"Catégorie d’événement":"Jour férié","Remarques":null}
-        ];
-        setSchedule(testData);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  // Handle department change
-  const handleDepartmentChange = (e) => {
-    const newDepartment = e.target.value;
-    setDepartment(newDepartment);
-    
-    // Sauvegarder le département dans le localStorage
-    localStorage.setItem('selectedDepartment', newDepartment);
-    
-    // Select first group from the new department
-    const newClass = AVAILABLE_GROUPS[newDepartment][0];
-    setSelectedClass(newClass);
-    
-    // Sauvegarder la nouvelle classe dans le localStorage
-    localStorage.setItem('selectedClass', newClass);
-  };
-  
-  // Handle class change
-  const handleClassChange = (e) => {
-    const newClass = e.target.value;
-    setSelectedClass(newClass);
-    
-    // Sauvegarder la classe dans le localStorage
-    localStorage.setItem('selectedClass', newClass);
-  };
-  
-  // Sauvegarder les préférences quand elles changent
-  useEffect(() => {
-    localStorage.setItem('selectedDepartment', department);
-    localStorage.setItem('selectedClass', selectedClass);
-  }, [department, selectedClass]);
-
-  // Process schedule data into a format for display
-  useEffect(() => {
-    if (!schedule || !Array.isArray(schedule)) return;
-    
-    const processed = {};
-    
-    // Initialize empty arrays for each day of the week
-    currentWeek.forEach(date => {
-      processed[formatDate(date)] = [];
-    });
-    
-    // Add events to their respective days
-    schedule.forEach(event => {
-      if (processed[event.Date]) {
-        processed[event.Date].push(event);
-      }
-    });
-    
-    // Sort events by start time for each day
-    Object.keys(processed).forEach(date => {
-      processed[date].sort((a, b) => {
-        const aStartTime = parseTime(a.Heure.split('-')[0]);
-        const bStartTime = parseTime(b.Heure.split('-')[0]);
-        return aStartTime - bStartTime;
-      });
-    });
-    
-    setProcessedSchedule(processed);
-  }, [schedule, currentWeek]);
-
-  // Fetch schedule when component mounts or when week/class changes
-  useEffect(() => {
-    fetchSchedule();
-  }, [currentWeek, selectedClass]);
-
-  // Handle event click to show the modal
-  const handleEventClick = (event, e) => {
-    setSelectedEvent(event);
-    
-    // Calculate the modal position
-    const rect = e.currentTarget.getBoundingClientRect();
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    
-    setModalPosition({
-      top: rect.top + scrollTop,
-      left: rect.right + 10 // 10px offset from the event
-    });
-  };
-
-  // Close the modal when clicking outside
-  const handleClickOutside = (e) => {
-    if (selectedEvent && !e.target.closest('.schedule-event') && !e.target.closest('.event-details-modal')) {
-      setSelectedEvent(null);
-    }
-  };
-
-  // Add event listener for clicking outside the modal
-  useEffect(() => {
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [selectedEvent]);
-
-  // Get the proper event type styling
-  const getEventTypeStyle = (eventType) => {
-    const type = EVENT_TYPES[eventType] || { color: "#64748b", bgColor: "rgba(100, 116, 139, 0.1)", short: "?" };
-    return {
-      borderLeftColor: type.color,
-      backgroundColor: type.bgColor
-    };
-  };
-
-  // Get shortened event type name
-  const getEventTypeShort = (eventType) => {
-    return EVENT_TYPES[eventType]?.short || eventType;
-  };
-
-  // Format the date range of the current week
-  const weekDateRange = `${formatDate(currentWeek[0])} - ${formatDate(currentWeek[4])}`;
-
-  // Check if a date is today
-  const isToday = (date) => {
-    const today = new Date();
-    return date.getDate() === today.getDate() && 
-           date.getMonth() === today.getMonth() && 
-           date.getFullYear() === today.getFullYear();
-  };
-
-  return (
-    <div className="schedule-page" onClick={handleClickOutside}>
-      <header className="schedule-header">
-        <button 
-          className="back-button" 
-          onClick={onBack}
-          aria-label="Retourner à la page précédente"
-        >
-          ← Retour
-        </button>
-        <h1>Emploi du temps</h1>
-
-        <div className="schedule-controls">
-          <div className="controls-group">
-            <label htmlFor="department-select">Département:</label>
-            <select 
-              id="department-select" 
-              value={department} 
-              onChange={handleDepartmentChange}
-              className="schedule-select"
-            >
-              {Object.keys(AVAILABLE_GROUPS).map(dept => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="controls-group">
-            <label htmlFor="class-select">Groupe:</label>
-            <select 
-              id="class-select" 
-              value={selectedClass} 
-              onChange={handleClassChange}
-              className="schedule-select"
-            >
-              {AVAILABLE_GROUPS[department].map(group => (
-                <option key={group} value={group}>{group}</option>
-              ))}
-            </select>
-          </div>
-          
-          <button 
-            className="refresh-button" 
-            onClick={fetchSchedule}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Chargement...' : 'Actualiser'}
-          </button>
-        </div>
-
-        <div className="week-navigation">
-          <button 
-            className="nav-button prev" 
-            onClick={getPreviousWeek}
-            aria-label="Semaine précédente"
-          >
-            ← Semaine précédente
-          </button>
-          <span className="current-week" aria-live="polite">
-            {weekDateRange}
-          </span>
-          <button 
-            className="nav-button next" 
-            onClick={getNextWeek}
-            aria-label="Semaine suivante"
-          >
-            Semaine suivante →
-          </button>
-        </div>
-      </header>
-
-      {/* Error message */}
-      {error && (
-        <div className="error-message" role="alert">
-          {error}
-        </div>
-      )}
-
-      {/* Loading indicator */}
-      {isLoading && (
-        <div className="loading-indicator" aria-live="polite">
-          <div className="spinner"></div>
-          <p>Chargement de l'emploi du temps...</p>
-        </div>
-      )}
-
-      <div className="schedule-legend" aria-label="Légende des types de cours">
-        {Object.entries(EVENT_TYPES).map(([type, { short, color }]) => (
-          <div className="legend-item" key={type}>
-            <span className="legend-color" style={{ backgroundColor: color }}></span>
-            <span className="legend-text">{short} - {type}</span>
-          </div>
-        ))}
-      </div>
-
-      {!isLoading && !error && (
-        <div className="schedule-grid-container" role="region" aria-label="Grille d'emploi du temps">
-          <div className="schedule-grid">
-            {/* Time column */}
-            <div className="time-column">
-              <div className="day-header empty-header"></div>
-              {HOURS.map(hour => (
-                <div className="time-slot" key={hour}>
-                  {`${hour}:00`}
-                </div>
-              ))}
-            </div>
-
-            {/* Day columns */}
-            {currentWeek.map((date, index) => {
-              const formattedDate = formatDate(date);
-              const dayName = DAYS[index];
-              const dayEvents = processedSchedule[formattedDate] || [];
-              const isTodayClass = isToday(date) ? 'today' : '';
-              
-              return (
-                <div className={`day-column ${isTodayClass}`} key={formattedDate}>
-                  <div className="day-header">
-                    <span className="day-name">{dayName}</span>
-                    <span className="day-date">{formattedDate}</span>
-                  </div>
-                  <div className="day-events">
-                    {/* Hour grid lines */}
-                    {HOURS.map(hour => (
-                      <div className="hour-gridline" key={hour}></div>
-                    ))}
-                    
-                    {/* Special handling for holidays */}
-                    {dayEvents.some(event => event["Catégorie d’événement"] === "Jour férié") ? (
-                      <div className="holiday-indicator">
-                        <div className="holiday-content">
-                          <span className="holiday-icon">🏖️</span>
-                          <span className="holiday-text">Jour férié</span>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Regular events */
-                      dayEvents.map((event, eventIndex) => {
-                        const eventStyle = {
-                          ...calculateEventStyle(event.Heure),
-                          ...getEventTypeStyle(event["Catégorie d’événement"])
-                        };
-                        
-                        return (
-                          <div 
-                            className="schedule-event" 
-                            style={eventStyle}
-                            key={eventIndex}
-                            onClick={(e) => handleEventClick(event, e)}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`${event.Matière || ''} - ${event["Catégorie d’événement"]} - ${event.Heure}`}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                handleEventClick(event, e);
-                                e.preventDefault();
-                              }
-                            }}
-                          >
-                            <div className="event-time">{event.Heure}</div>
-                            <div className="event-title">{event.Matière || 'Sans titre'}</div>
-                            <div className="event-type">
-                              {getEventTypeShort(event["Catégorie d’événement"])}
-                            </div>
-                            {event.Salle && (
-                              <div className="event-location">{event.Salle}</div>
-                            )}
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Event details modal */}
-      {selectedEvent && (
-        <div 
-          className="event-details-modal"
-          style={{ top: `${modalPosition.top}px`, left: `${modalPosition.left}px` }}
-          role="dialog"
-          aria-label="Détails du cours"
-        >
-          <button 
-            className="close-modal"
-            onClick={() => setSelectedEvent(null)}
-            aria-label="Fermer les détails"
-          >
-            ×
-          </button>
-          <h3>{selectedEvent.Matière || 'Sans titre'}</h3>
-          <div className="modal-detail">
-            <strong>Date:</strong> {selectedEvent.Date}
-          </div>
-          <div className="modal-detail">
-            <strong>Horaire:</strong> {selectedEvent.Heure}
-          </div>
-          <div className="modal-detail">
-            <strong>Type:</strong> {selectedEvent["Catégorie d’événement"]}
-          </div>
-          {selectedEvent.Personnel && (
-            <div className="modal-detail">
-              <strong>Enseignant:</strong> {selectedEvent.Personnel}
-            </div>
-          )}
-          {selectedEvent.Groupe && (
-            <div className="modal-detail">
-              <strong>Groupe:</strong> {selectedEvent.Groupe}
-            </div>
-          )}
-          {selectedEvent.Salle && (
-            <div className="modal-detail">
-              <strong>Salle:</strong> {selectedEvent.Salle}
-            </div>
-          )}
-          {selectedEvent.Remarques && (
-            <div className="modal-detail">
-              <strong>Remarques:</strong> {selectedEvent.Remarques}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* No events message */}
-      {!isLoading && !error && Object.values(processedSchedule).flat().length === 0 && (
-        <div className="no-events">
-          <p>Aucun cours programmé pour cette semaine</p>
-        </div>
-      )}
-    </div>
-  );
+// Import du fichier JSON avec les liens
+const linksData = {
+    "INF1-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-NM2ABGDV5957/schedule.ics",
+    "INF1-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-CU2JFTWC5958/schedule.ics",
+    "INF1-B1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-DU2XQKER5960/schedule.ics",
+    "INF1-B2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-VW2KSGLE5961/schedule.ics",
+    "INF1-C1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-LD2VKATP5963/schedule.ics",
+    "INF1-C2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-BG2EPJUY5964/schedule.ics",
+    "INF2-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-QY2TXVVR5966/schedule.ics",
+    "INF2-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-AJ2PMMSQ5967/schedule.ics",
+    "INF2-B1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-CH2ALWCJ5968/schedule.ics",
+    "INF2-B2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-NJ2HYPWU5969/schedule.ics",
+    "INF2-FA": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-EP2CETAY5970/schedule.ics",
+    "INF2-FI-A": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-FF2LEQYM5972/schedule.ics",
+    "INF2-FI-B": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-SN2PGVBC5973/schedule.ics",
+    "INF3-FA-A": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-KM2BSDSE5975/schedule.ics",
+    "INF3-FA-B": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-FD2MLGKS5976/schedule.ics",
+    "INF3-FI-A": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-LU2GUCAK5978/schedule.ics",
+    "INF3-FI-B": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-JQ2EKUUB5979/schedule.ics",
+    "MMI1-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-QJ2DMFYC5987/schedule.ics",
+    "MMI1-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-PW2GUKMM5988/schedule.ics",
+    "MMI1-B1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-HN2CHYNX5990/schedule.ics",
+    "MMI1-B2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-QW2SJTJH5991/schedule.ics",
+    "MMI2-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-QS2QEJVB5994/schedule.ics",
+    "MMI2-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-EG2LDXAM5995/schedule.ics",
+    "MMI2-B1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-AE2BGJHX5997/schedule.ics",
+    "MMI2-B2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-TM2VJCBU5998/schedule.ics",
+    "MMI3_GR1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-VC2XWEYV19912/schedule.ics",
+    "MMI3_GR2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-CY2PNYVB19913/schedule.ics",
+    "MMI3-FA-CN-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-CC2LTGMX6000/schedule.ics",
+    "MMI3-FA-CN-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-HW2LKCBM6001/schedule.ics",
+    "MMI3-FA-DW-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-TS2PGRAD6003/schedule.ics",
+    "MMI3-FA-DW-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-KL2GMWYW6004/schedule.ics",
+    "MMI3-FI-CN-A1": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-EB2URAPF6006/schedule.ics",
+    "MMI3-FI-CN-A2": "https://celcat.rambouillet.iut-velizy.uvsq.fr/cal/ical/G1-JP2NSAYC6007/schedule.ics"
 }
 
-export default SchedulePage;
+function SchedulePage({ onBack }) {
+    const [selectedClass, setSelectedClass] = useState('')
+    const [scheduleData, setScheduleData] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [currentWeek, setCurrentWeek] = useState(new Date())
+    const [isTestData, setIsTestData] = useState(false)
+
+    // Fonction pour obtenir les jours de la semaine
+    const getWeekDays = (date) => {
+        const start = new Date(date)
+        const day = start.getDay()
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1) // Ajuste pour commencer le lundi
+        start.setDate(diff)
+        
+        const days = []
+        for (let i = 0; i < 7; i++) {
+            const day = new Date(start)
+            day.setDate(start.getDate() + i)
+            days.push(day)
+        }
+        return days
+    }
+
+    // Fonction pour formater la date
+    const formatDate = (date) => {
+        return date.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        })
+    }
+
+    // Fonction pour formater l'heure
+    const formatTime = (date) => {
+        return date.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+    }
+
+    // Fonction pour parser le fichier ICS
+    const parseICS = async (url) => {
+        const proxies = [
+            // Essai direct d'abord
+            { url: url, name: 'direct' },
+            // Proxies alternatifs
+            { url: `https://corsproxy.io/?${encodeURIComponent(url)}`, name: 'corsproxy.io' },
+            { url: `https://cors-anywhere.herokuapp.com/${url}`, name: 'cors-anywhere' },
+            { url: `https://thingproxy.freeboard.io/fetch/${url}`, name: 'thingproxy' }
+        ];
+
+        let lastError;
+        
+        for (const proxy of proxies) {
+            try {
+                console.log(`Tentative avec ${proxy.name}:`, proxy.url);
+                
+                const response = await fetch(proxy.url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/calendar,text/plain,*/*',
+                        ...(proxy.name === 'direct' ? {} : { 'X-Requested-With': 'XMLHttpRequest' })
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                let icsText = await response.text();
+                
+                // Nettoyage du texte si nécessaire
+                if (icsText.includes('<!DOCTYPE') || icsText.includes('<html')) {
+                    throw new Error('Réponse HTML au lieu d\'ICS');
+                }
+                
+                console.log(`Succès avec ${proxy.name}`);
+                
+                const jcalData = ICAL.parse(icsText);
+                const vcalendar = new ICAL.Component(jcalData);
+                const events = vcalendar.getAllSubcomponents('vevent');
+                
+                return events.map(event => {
+                    const summary = event.getFirstPropertyValue('summary') || 'Cours'
+                    const location = event.getFirstPropertyValue('location') || ''
+                    const description = event.getFirstPropertyValue('description') || ''
+                    const dtstart = event.getFirstPropertyValue('dtstart')
+                    const dtend = event.getFirstPropertyValue('dtend')
+                    
+                    return {
+                        title: summary,
+                        location: location,
+                        description: description,
+                        start: dtstart.toJSDate(),
+                        end: dtend.toJSDate()
+                    }
+                });
+                
+            } catch (error) {
+                console.warn(`Échec avec ${proxy.name}:`, error.message);
+                lastError = error;
+                
+                // Attendre un peu avant le proxy suivant
+                if (proxy !== proxies[proxies.length - 1]) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+        
+        throw new Error(`Impossible de charger l'emploi du temps après ${proxies.length} tentatives. Dernière erreur: ${lastError?.message}`);
+    }
+
+    // Fonction pour générer des données de test en cas d'échec
+    const generateTestData = (className) => {
+        const today = new Date()
+        const events = []
+        
+        // Générer quelques événements de test pour les 7 prochains jours
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(today)
+            date.setDate(today.getDate() + i)
+            
+            // Éviter le week-end
+            if (date.getDay() !== 0 && date.getDay() !== 6) {
+                // Cours du matin
+                const morning = new Date(date)
+                morning.setHours(8, 30, 0, 0)
+                const morningEnd = new Date(morning)
+                morningEnd.setHours(10, 0, 0, 0)
+                
+                events.push({
+                    title: `Cours ${className} - Matin`,
+                    location: `Salle ${100 + i}`,
+                    description: `Cours de test pour ${className}`,
+                    start: morning,
+                    end: morningEnd
+                })
+                
+                // Cours de l'après-midi
+                const afternoon = new Date(date)
+                afternoon.setHours(14, 0, 0, 0)
+                const afternoonEnd = new Date(afternoon)
+                afternoonEnd.setHours(15, 30, 0, 0)
+                
+                events.push({
+                    title: `TP ${className} - Après-midi`,
+                    location: `Labo ${200 + i}`,
+                    description: `TP de test pour ${className}`,
+                    start: afternoon,
+                    end: afternoonEnd
+                })
+            }
+        }
+        
+        return events
+    }
+
+    // Charger l'emploi du temps pour une classe
+    const loadSchedule = async (className) => {
+        if (!className || !linksData[className]) return
+        
+        setLoading(true)
+        setError('')
+        setIsTestData(false)
+        
+        try {
+            const events = await parseICS(linksData[className])
+            setScheduleData(events)
+            setIsTestData(false)
+        } catch (err) {
+            console.error('Toutes les tentatives ont échoué, utilisation de données de test:', err)
+            
+            // En cas d'échec complet, proposer des données de test
+            setError(`⚠️ Connexion impossible aux serveurs de l'IUT. Affichage de données de démonstration.`)
+            
+            // Données de test après un délai pour simuler le chargement
+            setTimeout(() => {
+                const testEvents = generateTestData(className)
+                setScheduleData(testEvents)
+                setIsTestData(true)
+                setError('') // Enlever l'erreur une fois les données de test chargées
+            }, 1000)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // Charger l'emploi du temps quand une classe est sélectionnée
+    useEffect(() => {
+        if (selectedClass) {
+            loadSchedule(selectedClass)
+        }
+    }, [selectedClass])
+
+    // Filtrer les événements pour la semaine courante
+    const getWeekEvents = () => {
+        const weekDays = getWeekDays(currentWeek)
+        const startOfWeek = weekDays[0]
+        const endOfWeek = new Date(weekDays[6])
+        endOfWeek.setHours(23, 59, 59, 999)
+        
+        return scheduleData.filter(event => {
+            const eventDate = new Date(event.start)
+            return eventDate >= startOfWeek && eventDate <= endOfWeek
+        })
+    }
+
+    // Navigation de semaine
+    const goToPreviousWeek = () => {
+        const prevWeek = new Date(currentWeek)
+        prevWeek.setDate(currentWeek.getDate() - 7)
+        setCurrentWeek(prevWeek)
+    }
+
+    const goToNextWeek = () => {
+        const nextWeek = new Date(currentWeek)
+        nextWeek.setDate(currentWeek.getDate() + 7)
+        setCurrentWeek(nextWeek)
+    }
+
+    const goToCurrentWeek = () => {
+        setCurrentWeek(new Date())
+    }
+
+    // Organiser les événements par jour
+    const organizeEventsByDay = () => {
+        const weekDays = getWeekDays(currentWeek)
+        const weekEvents = getWeekEvents()
+        
+        const eventsByDay = {}
+        weekDays.forEach(day => {
+            const dayKey = day.toDateString()
+            eventsByDay[dayKey] = weekEvents.filter(event => {
+                return new Date(event.start).toDateString() === dayKey
+            }).sort((a, b) => new Date(a.start) - new Date(b.start))
+        })
+        
+        return { weekDays, eventsByDay }
+    }
+
+    const { weekDays, eventsByDay } = organizeEventsByDay()
+
+    return (
+        <div className="schedule-page">
+            <header className="page-header">
+                <button className="back-button" onClick={onBack}>
+                    ← Retour
+                </button>
+                <h1>Emploi du temps</h1>
+            </header>
+
+            <div className="schedule-controls">
+                <div className="controls-grid">
+                    <div className="class-selector">
+                        <label htmlFor="class-select">Choisir une classe :</label>
+                        <select
+                            id="class-select"
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                        >
+                            <option value="">-- Sélectionner une classe --</option>
+                            {Object.keys(linksData).map(className => (
+                                <option key={className} value={className}>
+                                    {className}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedClass && (
+                        <div className="week-navigation">
+                            <button onClick={goToPreviousWeek}>← Semaine précédente</button>
+                            <button onClick={goToCurrentWeek}>Cette semaine</button>
+                            <button onClick={goToNextWeek}>Semaine suivante →</button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {loading && (
+                <div className="loading-message">
+                    <div className="spinner"></div>
+                    <p>Chargement de l'emploi du temps...</p>
+                    <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                        Tentative de connexion aux serveurs...
+                    </p>
+                </div>
+            )}
+
+            <ErrorBoundary 
+                error={error} 
+                onRetry={() => {
+                    setError('');
+                    if (selectedClass) {
+                        loadSchedule(selectedClass);
+                    }
+                }}
+            >
+                {selectedClass && !loading && !error && (
+                    <div className="schedule-content">
+                        <div className="week-header">
+                            <h2>
+                                Semaine du {formatDate(weekDays[0])} au {formatDate(weekDays[6])}
+                            </h2>
+                            <div className="class-info">
+                                <p className="selected-class">Classe : {selectedClass}</p>
+                                {isTestData && (
+                                    <div className="test-data-badge">
+                                        🧪 Données de démonstration
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="schedule-grid">
+                            {weekDays.map((day, index) => {
+                                const dayKey = day.toDateString()
+                                const dayEvents = eventsByDay[dayKey] || []
+                                const isToday = day.toDateString() === new Date().toDateString()
+                                
+                                return (
+                                    <div 
+                                        key={dayKey} 
+                                        className={`day-column ${isToday ? 'today' : ''} ${index >= 5 ? 'weekend' : ''}`}
+                                    >
+                                        <div className="day-header">
+                                            <h3>{formatDate(day)}</h3>
+                                        </div>
+                                        <div className="day-events">
+                                            {dayEvents.length > 0 ? (
+                                                dayEvents.map((event, eventIndex) => (
+                                                    <div key={eventIndex} className="event-item">
+                                                        <div className="event-time">
+                                                            {formatTime(event.start)} - {formatTime(event.end)}
+                                                        </div>
+                                                        <div className="event-title">{event.title}</div>
+                                                        {event.location && (
+                                                            <div className="event-location">📍 {event.location}</div>
+                                                        )}
+                                                        {event.description && (
+                                                            <div className="event-description">{event.description}</div>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="no-events">Aucun cours</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+            </ErrorBoundary>
+        </div>
+    )
+}
+
+export default SchedulePage

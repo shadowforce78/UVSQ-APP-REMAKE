@@ -187,11 +187,7 @@ function App() {
 				/>;
 			case 'schedule':
 				return <SchedulePage 
-					schedule={scheduleData}
-					loading={scheduleLoading}
-					error={scheduleError}
 					onBack={() => setCurrentPage('home')}
-					onRefresh={handleScheduleRefresh}
 				/>;
 			case 'absences':
 				return <AbsencesPage 

@@ -77,15 +77,13 @@ function Homepage({ userData, onShowBulletin, onShowSchedule, onShowAbsences, on
                             </div>
                         </div>
                         
-                        {hasScheduleAccess && (
-                            <div className="action-card" onClick={onShowSchedule}>
-                                <div className="action-icon schedule-icon">📅</div>
-                                <div className="action-content">
-                                    <h3>Emploi du temps</h3>
-                                    <p>Accédez à votre planning de cours</p>
-                                </div>
+                        <div className="action-card" onClick={onShowSchedule}>
+                            <div className="action-icon schedule-icon">📅</div>
+                            <div className="action-content">
+                                <h3>Emploi du temps</h3>
+                                <p>Consultez vos cours par semaine</p>
                             </div>
-                        )}
+                        </div>
                         
                         <div className="action-card" onClick={onShowAbsences}>
                             <div className="action-icon absence-icon">📋</div>

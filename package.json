@@ -13,6 +13,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
+    "ical.js": "^2.2.1",
     "mongodb": "^6.13.0",
     "mongoose": "^8.10.1",
     "node-fetch": "^3.3.2",
