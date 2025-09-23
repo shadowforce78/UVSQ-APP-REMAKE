@@ -130,23 +130,62 @@ function SchedulePage({ onBack }) {
                 
                 const jcalData = ICAL.parse(icsText);
                 const vcalendar = new ICAL.Component(jcalData);
-                const events = vcalendar.getAllSubcomponents('vevent');
-                
-                return events.map(event => {
-                    const summary = event.getFirstPropertyValue('summary') || 'Cours'
-                    const location = event.getFirstPropertyValue('location') || ''
-                    const description = event.getFirstPropertyValue('description') || ''
-                    const dtstart = event.getFirstPropertyValue('dtstart')
-                    const dtend = event.getFirstPropertyValue('dtend')
-                    
-                    return {
-                        title: summary,
-                        location: location,
-                        description: description,
-                        start: dtstart.toJSDate(),
-                        end: dtend.toJSDate()
+                const vevents = vcalendar.getAllSubcomponents('vevent');
+
+                // Fenêtre d'expansion des récurrences: de -60 jours à +180 jours
+                const now = new Date();
+                const fromWindow = new Date(now);
+                fromWindow.setDate(fromWindow.getDate() - 60);
+                const toWindow = new Date(now);
+                toWindow.setDate(toWindow.getDate() + 180);
+                const fromICAL = ICAL.Time.fromJSDate(fromWindow);
+                const toICAL = ICAL.Time.fromJSDate(toWindow);
+
+                const expanded = [];
+
+                vevents.forEach(comp => {
+                    const evt = new ICAL.Event(comp);
+                    const summary = comp.getFirstPropertyValue('summary') || 'Cours';
+                    const location = comp.getFirstPropertyValue('location') || '';
+                    const description = comp.getFirstPropertyValue('description') || '';
+
+                    if (evt.isRecurring()) {
+                        const it = evt.iterator(fromICAL);
+                        let next;
+                        while ((next = it.next())) {
+                            if (next.compare(toICAL) > 0) break; // au-delà de la fenêtre
+                            const details = evt.getOccurrenceDetails(next);
+                            expanded.push({
+                                title: summary,
+                                location,
+                                description,
+                                start: details.startDate.toJSDate(),
+                                end: details.endDate.toJSDate()
+                            });
+                        }
+                    } else {
+                        const dtstart = comp.getFirstPropertyValue('dtstart');
+                        const dtend = comp.getFirstPropertyValue('dtend');
+                        if (dtstart && dtend) {
+                            const s = dtstart.toJSDate();
+                            const e = dtend.toJSDate();
+                            // Garder uniquement les événements qui tombent dans la fenêtre pour limiter le volume
+                            if (e >= fromWindow && s <= toWindow) {
+                                expanded.push({
+                                    title: summary,
+                                    location,
+                                    description,
+                                    start: s,
+                                    end: e
+                                });
+                            }
+                        }
                     }
                 });
+
+                // Tri global par date de début
+                expanded.sort((a, b) => a.start - b.start);
+                return expanded;
                 
             } catch (error) {
                 console.warn(`Échec avec ${proxy.name}:`, error.message);
@@ -247,14 +286,15 @@ function SchedulePage({ onBack }) {
     // Filtrer les événements pour la semaine courante
     const getWeekEvents = () => {
         const weekDays = getWeekDays(currentWeek)
-        const startOfWeek = weekDays[0] // Lundi
+        const startOfWeek = new Date(weekDays[0]) // Lundi
+        startOfWeek.setHours(0, 0, 0, 0)
         // Limiter à vendredi 23:59:59
         const endOfWeek = new Date(weekDays[4])
         endOfWeek.setHours(23, 59, 59, 999)
         
         return scheduleData.filter(event => {
-            const eventDate = new Date(event.start)
-            return eventDate >= startOfWeek && eventDate <= endOfWeek
+            const s = new Date(event.start).getTime()
+            return s >= startOfWeek.getTime() && s <= endOfWeek.getTime()
         })
     }
 
@@ -282,9 +322,13 @@ function SchedulePage({ onBack }) {
         
         const eventsByDay = {}
         weekDays.forEach(day => {
-            const dayKey = day.toDateString()
+            const d = new Date(day)
+            d.setHours(0,0,0,0)
+            const dayKey = d.toDateString()
             eventsByDay[dayKey] = weekEvents.filter(event => {
-                return new Date(event.start).toDateString() === dayKey
+                const ed = new Date(event.start)
+                ed.setHours(0,0,0,0)
+                return ed.toDateString() === dayKey
             }).sort((a, b) => new Date(a.start) - new Date(b.start))
         })
         
@@ -373,9 +417,11 @@ function SchedulePage({ onBack }) {
 
                         <div className="schedule-grid">
                             {weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6).map((day) => {
-                                const dayKey = day.toDateString()
+                                const d0 = new Date(day); d0.setHours(0,0,0,0)
+                                const dayKey = d0.toDateString()
                                 const dayEvents = eventsByDay[dayKey] || []
-                                const isToday = day.toDateString() === new Date().toDateString()
+                                const today0 = new Date(); today0.setHours(0,0,0,0)
+                                const isToday = d0.toDateString() === today0.toDateString()
                                 
                                 return (
                                     <div 
