@@ -153,6 +153,28 @@
 
 .test-data-badge { background: linear-gradient(135deg, #334155, #1f2937); color: #fde68a; padding: 0.4rem 0.9rem; border-radius: 25px; font-size: 0.8rem; font-weight: 800; border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
 
+/* Onglets de jour (mobile) */
+.mobile-day-tabs {
+  display: none;
+  gap: 0.5rem;
+  margin: 0.25rem 0 1rem;
+}
+.day-tab {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-high);
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.day-tab.active {
+  background: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
 /* Grille principale - OPTIMISÉE POUR PC (jours ouvrés uniquement) */
 .schedule-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; flex: 1; min-height: 500px; }
 
@@ -301,6 +323,8 @@
   .week-header h2 {
     font-size: 1.25rem;
   }
+  .mobile-day-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; }
+  .schedule-grid { grid-template-columns: 1fr; }
   
   .schedule-grid {
     grid-template-columns: repeat(3, 1fr);

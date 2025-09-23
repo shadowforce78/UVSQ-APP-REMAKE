@@ -40,12 +40,20 @@ const linksData = {
 }
 
 function SchedulePage({ onBack }) {
-    const [selectedClass, setSelectedClass] = useState('')
+    const [selectedClass, setSelectedClass] = useState(() => {
+        try {
+            return localStorage.getItem('uvsq:lastClass') || ''
+        } catch (_) {
+            return ''
+        }
+    })
     const [scheduleData, setScheduleData] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [currentWeek, setCurrentWeek] = useState(new Date())
     const [isTestData, setIsTestData] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
+    const [mobileActiveDayKey, setMobileActiveDayKey] = useState('')
 
     // Fonction pour obtenir les jours de la semaine
     const getWeekDays = (date) => {
@@ -283,6 +291,36 @@ function SchedulePage({ onBack }) {
         }
     }, [selectedClass])
 
+    // Sauvegarder la sélection et valider la clé au montage
+    useEffect(() => {
+        // Persist selection
+        try {
+            if (selectedClass) {
+                localStorage.setItem('uvsq:lastClass', selectedClass)
+            }
+        } catch (_) { /* noop */ }
+    }, [selectedClass])
+
+    useEffect(() => {
+        // Validate stored value on mount
+        try {
+            const stored = localStorage.getItem('uvsq:lastClass')
+            if (stored && !linksData[stored]) {
+                localStorage.removeItem('uvsq:lastClass')
+                setSelectedClass('')
+            }
+        } catch (_) { /* noop */ }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    // Détection mobile (<= 768px)
+    useEffect(() => {
+        const update = () => setIsMobile(window.innerWidth <= 768)
+        update()
+        window.addEventListener('resize', update)
+        return () => window.removeEventListener('resize', update)
+    }, [])
+
     // Filtrer les événements pour la semaine courante
     const getWeekEvents = () => {
         const weekDays = getWeekDays(currentWeek)
@@ -336,6 +374,23 @@ function SchedulePage({ onBack }) {
     }
 
     const { weekDays, eventsByDay } = organizeEventsByDay()
+
+    // Maintenir le jour actif sur mobile (par défaut: aujourd'hui si ouvré, sinon lundi)
+    useEffect(() => {
+        if (!isMobile) return
+        const weekdaysOnly = weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6)
+        const today = new Date(); today.setHours(0,0,0,0)
+        const todayInWeek = weekdaysOnly.find(d => {
+            const d0 = new Date(d); d0.setHours(0,0,0,0); return d0.toDateString() === today.toDateString()
+        })
+        const target = todayInWeek || weekdaysOnly[0]
+        if (!target) return
+        const t0 = new Date(target); t0.setHours(0,0,0,0)
+        const key = t0.toDateString()
+        if (!mobileActiveDayKey || !weekdaysOnly.some(d => { const d0 = new Date(d); d0.setHours(0,0,0,0); return d0.toDateString() === mobileActiveDayKey })) {
+            setMobileActiveDayKey(key)
+        }
+    }, [isMobile, weekDays, mobileActiveDayKey])
 
     return (
         <div className="schedule-page">
@@ -415,8 +470,31 @@ function SchedulePage({ onBack }) {
                             </div>
                         </div>
 
+                        {isMobile && (
+                            <div className="mobile-day-tabs">
+                                {weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6).map((day) => {
+                                    const d0 = new Date(day); d0.setHours(0,0,0,0)
+                                    const key = d0.toDateString()
+                                    const label = day.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })
+                                    const active = key === mobileActiveDayKey
+                                    return (
+                                        <button
+                                            key={key}
+                                            className={`day-tab ${active ? 'active' : ''}`}
+                                            onClick={() => setMobileActiveDayKey(key)}
+                                        >
+                                            {label}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+                        )}
+
                         <div className="schedule-grid">
-                            {weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6).map((day) => {
+                            {(isMobile
+                                ? weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6).filter(day => { const d0 = new Date(day); d0.setHours(0,0,0,0); return d0.toDateString() === mobileActiveDayKey })
+                                : weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6)
+                            ).map((day) => {
                                 const d0 = new Date(day); d0.setHours(0,0,0,0)
                                 const dayKey = d0.toDateString()
                                 const dayEvents = eventsByDay[dayKey] || []
