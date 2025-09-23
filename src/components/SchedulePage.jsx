@@ -432,22 +432,40 @@ function SchedulePage({ onBack }) {
                                             <h3>{formatDate(day)}</h3>
                                         </div>
                                         <div className="day-events">
-                                            {dayEvents.length > 0 ? (
-                                                dayEvents.map((event, eventIndex) => (
-                                                    <div key={eventIndex} className="event-item">
-                                                        <div className="event-time">
-                                                            {formatTime(event.start)} - {formatTime(event.end)}
+                                            {dayEvents.length > 0 ? (() => {
+                                                const items = []
+                                                for (let i = 0; i < dayEvents.length; i++) {
+                                                    const ev = dayEvents[i]
+                                                    if (i > 0) {
+                                                        const prev = dayEvents[i-1]
+                                                        const gapMin = Math.max(0, (new Date(ev.start) - new Date(prev.end)) / 60000)
+                                                        if (gapMin >= 20) {
+                                                            const gapLabel = `${formatTime(prev.end)} - ${formatTime(ev.start)}`
+                                                            const height = Math.max(10, Math.min(72, Math.round(gapMin * 0.6))) // ~36px/heure
+                                                            items.push(
+                                                                <div key={`gap-${i}-${dayKey}`} className="gap-item" style={{ height }}>
+                                                                    Pause ({gapLabel})
+                                                                </div>
+                                                            )
+                                                        }
+                                                    }
+                                                    items.push(
+                                                        <div key={`ev-${i}-${dayKey}`} className="event-item">
+                                                            <div className="event-time">
+                                                                {formatTime(ev.start)} - {formatTime(ev.end)}
+                                                            </div>
+                                                            <div className="event-title">{ev.title}</div>
+                                                            {ev.location && (
+                                                                <div className="event-location">📍 {ev.location}</div>
+                                                            )}
+                                                            {ev.description && (
+                                                                <div className="event-description">{ev.description}</div>
+                                                            )}
                                                         </div>
-                                                        <div className="event-title">{event.title}</div>
-                                                        {event.location && (
-                                                            <div className="event-location">📍 {event.location}</div>
-                                                        )}
-                                                        {event.description && (
-                                                            <div className="event-description">{event.description}</div>
-                                                        )}
-                                                    </div>
-                                                ))
-                                            ) : (
+                                                    )
+                                                }
+                                                return items
+                                            })() : (
                                                 <div className="no-events">Aucun cours</div>
                                             )}
                                         </div>
