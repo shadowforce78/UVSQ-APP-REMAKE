@@ -100,7 +100,8 @@ function SchedulePage({ onBack }) {
                 const response = await fetch(proxy.url, {
                     method: 'GET',
                     headers: {
-                        'Accept': 'text/calendar,text/plain,*/*',
+                        'Accept': 'text/calendar,text/plain,*/*; charset=utf-8',
+                        'Accept-Charset': 'utf-8',
                         ...(proxy.name === 'direct' ? {} : { 'X-Requested-With': 'XMLHttpRequest' })
                     }
                 });
@@ -109,7 +110,16 @@ function SchedulePage({ onBack }) {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
-                let icsText = await response.text();
+                // Force explicit UTF-8 decode (fallback latin1 if mojibake detected)
+                const buffer = await response.arrayBuffer();
+                const utf8Decoder = new TextDecoder('utf-8');
+                let icsText = utf8Decoder.decode(buffer).replace(/^\uFEFF/, '');
+                if (/[^\u0000-\u00FF]/.test(icsText) === false && /Ã|�/.test(icsText)) {
+                    // Likely mojibake from wrong charset; try latin1 fallback using original buffer
+                    try {
+                        icsText = new TextDecoder('latin1').decode(buffer);
+                    } catch (_) { /* ignore */ }
+                }
                 
                 // Nettoyage du texte si nécessaire
                 if (icsText.includes('<!DOCTYPE') || icsText.includes('<html')) {
@@ -237,8 +247,9 @@ function SchedulePage({ onBack }) {
     // Filtrer les événements pour la semaine courante
     const getWeekEvents = () => {
         const weekDays = getWeekDays(currentWeek)
-        const startOfWeek = weekDays[0]
-        const endOfWeek = new Date(weekDays[6])
+        const startOfWeek = weekDays[0] // Lundi
+        // Limiter à vendredi 23:59:59
+        const endOfWeek = new Date(weekDays[4])
         endOfWeek.setHours(23, 59, 59, 999)
         
         return scheduleData.filter(event => {
@@ -341,9 +352,15 @@ function SchedulePage({ onBack }) {
                 {selectedClass && !loading && !error && (
                     <div className="schedule-content">
                         <div className="week-header">
-                            <h2>
-                                Semaine du {formatDate(weekDays[0])} au {formatDate(weekDays[6])}
-                            </h2>
+                            {(() => {
+                                const weekdaysOnly = weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6);
+                                const endDay = weekdaysOnly[weekdaysOnly.length - 1] || weekDays[weekDays.length - 1];
+                                return (
+                                    <h2>
+                                        Semaine du {formatDate(weekDays[0])} au {formatDate(endDay)}
+                                    </h2>
+                                );
+                            })()}
                             <div className="class-info">
                                 <p className="selected-class">Classe : {selectedClass}</p>
                                 {isTestData && (
@@ -355,7 +372,7 @@ function SchedulePage({ onBack }) {
                         </div>
 
                         <div className="schedule-grid">
-                            {weekDays.map((day, index) => {
+                            {weekDays.filter(d => d.getDay() !== 0 && d.getDay() !== 6).map((day) => {
                                 const dayKey = day.toDateString()
                                 const dayEvents = eventsByDay[dayKey] || []
                                 const isToday = day.toDateString() === new Date().toDateString()
@@ -363,7 +380,7 @@ function SchedulePage({ onBack }) {
                                 return (
                                     <div 
                                         key={dayKey} 
-                                        className={`day-column ${isToday ? 'today' : ''} ${index >= 5 ? 'weekend' : ''}`}
+                                        className={`day-column ${isToday ? 'today' : ''}`}
                                     >
                                         <div className="day-header">
                                             <h3>{formatDate(day)}</h3>

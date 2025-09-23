@@ -153,8 +153,8 @@
 
 .test-data-badge { background: linear-gradient(135deg, #334155, #1f2937); color: #fde68a; padding: 0.4rem 0.9rem; border-radius: 25px; font-size: 0.8rem; font-weight: 800; border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
 
-/* Grille principale - OPTIMISÉE POUR PC */
-.schedule-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem; flex: 1; min-height: 500px; }
+/* Grille principale - OPTIMISÉE POUR PC (jours ouvrés uniquement) */
+.schedule-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; flex: 1; min-height: 500px; }
 
 .day-column {
   background: rgba(2, 6, 23, 0.3);

@@ -11,7 +11,7 @@ function BulletinPage({ userData, onBack }) {
     }
 
     return (
-        <div className="bulletin-page">
+    <div className="bulletin-page">
             <button className="back-button" onClick={onBack}>
                 ← Retour
             </button>
