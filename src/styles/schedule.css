@@ -324,12 +324,8 @@
     font-size: 1.25rem;
   }
   .mobile-day-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; }
-  .schedule-grid { grid-template-columns: 1fr; }
-  
-  .schedule-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-  }
+  .schedule-grid { grid-template-columns: 1fr; justify-items: center; }
+  .day-column { width: min(680px, 100%); margin: 0 auto; }
   
   .day-header {
     padding: 0.75rem 0.5rem;
@@ -343,9 +339,9 @@
     padding: 0.5rem;
   }
   
-  .event-item {
-    padding: 0.5rem;
-  }
+  .event-item { padding: 0.6rem 0.75rem; }
+  .event-title { font-size: 1rem; }
+  .event-time, .event-location { font-size: 0.9rem; }
 }
 
 @media (max-width: 480px) {
