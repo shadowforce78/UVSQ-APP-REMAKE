@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   uvsq-backend:
     build:
@@ -5,16 +7,20 @@ services:
       dockerfile: Dockerfile
     container_name: uvsq-backend
     restart: unless-stopped
-    ports:
-      - "3001:3001"
     environment:
       - NODE_ENV=production
       - PORT=3001
       - VIRTUAL_HOST=api.uvsq.saumondeluxe.com
       - LETSENCRYPT_HOST=api.uvsq.saumondeluxe.com
       - LETSENCRYPT_EMAIL=planque.adam@gmail.com
+    expose:
+      - "3001" # expose seulement au proxy (pas de binding host direct)
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/bulletin/test').catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:3001/api/bulletin/test || exit 1",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -33,6 +39,8 @@ services:
       - VIRTUAL_HOST=uvsq.saumondeluxe.com
       - LETSENCRYPT_HOST=uvsq.saumondeluxe.com
       - LETSENCRYPT_EMAIL=planque.adam@gmail.com
+    expose:
+      - "80"
     networks:
       - proxy-tier
 
