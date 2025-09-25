@@ -93,28 +93,26 @@ function SchedulePage({ onBack }) {
     const sameOrigin = typeof window !== 'undefined' ? window.location.origin : ''
     const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
     const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:'
-    const serverProxy = sameOrigin ? `${sameOrigin.replace(/\/$/, '')}/api/ics?url=${encodeURIComponent(url)}` : `/api/ics?url=${encodeURIComponent(url)}`
+    const isLocalhost = /(^|\.)localhost$/.test(hostname) || hostname === '127.0.0.1'
     const altApiOrigin = hostname ? `${protocol}//api.${hostname}` : ''
-    const serverProxyAlt = altApiOrigin ? `${altApiOrigin}/api/ics?url=${encodeURIComponent(url)}` : ''
-    // Endpoint Python local (JSON { ics: "..." }) si disponible
-    // const pyApiBase = 'http://127.0.0.1:63246';
-    // Désactivé en production pour éviter CORS cross-origin
-    const enablePyIcsJson = hostname === 'localhost' || hostname === '127.0.0.1';
-    const pyApiBase = "https://api.saumondeluxe.com";
-        const proxies = [
-            // Priorité: API backend dédiée au sous-domaine api.<host>
-            ...(serverProxyAlt ? [{ url: serverProxyAlt, name: 'server-proxy-alt' }] : []),
-            // Fallback: même origine (utile en dev avec proxy Vite)
-            { url: serverProxy, name: 'server-proxy' },
-            // Optionnel: endpoint Python (JSON) uniquement en local/dev
-            ...(enablePyIcsJson && className ? [{ url: `${pyApiBase}/uvsq/edt/ics/${encodeURIComponent(className)}`, name: 'py-ics-json' }] : []),
-            // Essai direct ensuite (utile en local si CORS ouvert)
-            { url: url, name: 'direct' },
-            // Proxies publics en dernier recours
-            { url: `https://corsproxy.io/?${encodeURIComponent(url)}`, name: 'corsproxy.io' },
-            { url: `https://cors-anywhere.herokuapp.com/${url}`, name: 'cors-anywhere' },
-            { url: `https://thingproxy.freeboard.io/fetch/${url}`, name: 'thingproxy' }
-        ];
+
+    // Endpoints backend (tous passent par notre serveur Node qui appelle api.saumondeluxe.com)
+    const endpointSameOrigin = `${(sameOrigin || '').replace(/\/$/, '')}/api/ics-class/${encodeURIComponent(className || '')}`
+    const endpointAlt = altApiOrigin ? `${altApiOrigin}/api/ics-class/${encodeURIComponent(className || '')}` : ''
+
+        const proxies = isLocalhost
+            ? [
+                // En dev: passer par le proxy Vite -> localhost:3001
+                { url: endpointSameOrigin, name: 'backend-ics-class-same-origin' },
+                // Fallback éventuel
+                ...(endpointAlt ? [{ url: endpointAlt, name: 'backend-ics-class-alt' }] : [])
+              ]
+            : [
+                // En prod: utiliser api.<host>
+                ...(endpointAlt ? [{ url: endpointAlt, name: 'backend-ics-class-alt' }] : []),
+                // Fallback (probable 404 en prod mais sans risque)
+                { url: endpointSameOrigin, name: 'backend-ics-class-same-origin' }
+              ];
 
         let lastError;
         
@@ -126,7 +124,7 @@ function SchedulePage({ onBack }) {
                     method: 'GET',
                     // Éviter les en-têtes non simples pour limiter les preflights CORS
                     headers: {
-                        'Accept': proxy.name === 'py-ics-json' ? 'application/json' : 'text/calendar,text/plain,*/*; charset=utf-8'
+                        'Accept': 'text/calendar,text/plain,*/*; charset=utf-8'
                     }
                 });
                 
@@ -135,24 +133,15 @@ function SchedulePage({ onBack }) {
                 }
                 
                 let icsText;
-                if (proxy.name === 'py-ics-json') {
-                    // L'API Python renvoie { ics: "..." }
-                    const data = await response.json();
-                    if (!data || typeof data.ics !== 'string' || data.ics.length === 0) {
-                        throw new Error('Réponse JSON invalide (clé ics manquante)');
-                    }
-                    icsText = data.ics;
-                } else {
-                    // Force explicit UTF-8 decode (fallback latin1 if mojibake detected)
-                    const buffer = await response.arrayBuffer();
-                    const utf8Decoder = new TextDecoder('utf-8');
-                    icsText = utf8Decoder.decode(buffer).replace(/^\uFEFF/, '');
-                    if (/[^\u0000-\u00FF]/.test(icsText) === false && /Ã|�/.test(icsText)) {
-                        // Likely mojibake from wrong charset; try latin1 fallback using original buffer
-                        try {
-                            icsText = new TextDecoder('latin1').decode(buffer);
-                        } catch (_) { /* ignore */ }
-                    }
+                // Force explicit UTF-8 decode (fallback latin1 if mojibake detected)
+                const buffer = await response.arrayBuffer();
+                const utf8Decoder = new TextDecoder('utf-8');
+                icsText = utf8Decoder.decode(buffer).replace(/^\uFEFF/, '');
+                if (/[^\u0000-\u00FF]/.test(icsText) === false && /Ã|�/.test(icsText)) {
+                    // Likely mojibake from wrong charset; try latin1 fallback using original buffer
+                    try {
+                        icsText = new TextDecoder('latin1').decode(buffer);
+                    } catch (_) { /* ignore */ }
                 }
                 
                 // Nettoyage du texte si nécessaire
