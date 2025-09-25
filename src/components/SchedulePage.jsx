@@ -89,14 +89,18 @@ function SchedulePage({ onBack }) {
     }
 
     // Fonction pour parser le fichier ICS
-    const parseICS = async (url) => {
+    const parseICS = async (url, className = null) => {
     const sameOrigin = typeof window !== 'undefined' ? window.location.origin : ''
     const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
     const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:'
     const serverProxy = sameOrigin ? `${sameOrigin.replace(/\/$/, '')}/api/ics?url=${encodeURIComponent(url)}` : `/api/ics?url=${encodeURIComponent(url)}`
     const altApiOrigin = hostname ? `${protocol}//api.${hostname}` : ''
     const serverProxyAlt = altApiOrigin ? `${altApiOrigin}/api/ics?url=${encodeURIComponent(url)}` : ''
+    // Endpoint Python local (JSON { ics: "..." }) si disponible
+    const pyApiBase = 'http://127.0.0.1:63246';
         const proxies = [
+            // Nouvel endpoint Python qui renvoie JSON { ics: "..." }
+            ...(className ? [{ url: `${pyApiBase}/uvsq/edt/ics/${encodeURIComponent(className)}`, name: 'py-ics-json' }] : []),
             // Proxy côté serveur en priorité (contourne CORS en prod)
             { url: serverProxy, name: 'server-proxy' },
             ...(serverProxyAlt ? [{ url: serverProxyAlt, name: 'server-proxy-alt' }] : []),
@@ -117,7 +121,8 @@ function SchedulePage({ onBack }) {
                 const response = await fetch(proxy.url, {
                     method: 'GET',
                     headers: {
-                        'Accept': 'text/calendar,text/plain,*/*; charset=utf-8',
+                        // JSON attendu seulement pour l'endpoint Python
+                        'Accept': proxy.name === 'py-ics-json' ? 'application/json' : 'text/calendar,text/plain,*/*; charset=utf-8',
                         'Accept-Charset': 'utf-8',
                         ...(proxy.name === 'direct' ? {} : { 'X-Requested-With': 'XMLHttpRequest' })
                     }
@@ -127,15 +132,25 @@ function SchedulePage({ onBack }) {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
-                // Force explicit UTF-8 decode (fallback latin1 if mojibake detected)
-                const buffer = await response.arrayBuffer();
-                const utf8Decoder = new TextDecoder('utf-8');
-                let icsText = utf8Decoder.decode(buffer).replace(/^\uFEFF/, '');
-                if (/[^\u0000-\u00FF]/.test(icsText) === false && /Ã|�/.test(icsText)) {
-                    // Likely mojibake from wrong charset; try latin1 fallback using original buffer
-                    try {
-                        icsText = new TextDecoder('latin1').decode(buffer);
-                    } catch (_) { /* ignore */ }
+                let icsText;
+                if (proxy.name === 'py-ics-json') {
+                    // L'API Python renvoie { ics: "..." }
+                    const data = await response.json();
+                    if (!data || typeof data.ics !== 'string' || data.ics.length === 0) {
+                        throw new Error('Réponse JSON invalide (clé ics manquante)');
+                    }
+                    icsText = data.ics;
+                } else {
+                    // Force explicit UTF-8 decode (fallback latin1 if mojibake detected)
+                    const buffer = await response.arrayBuffer();
+                    const utf8Decoder = new TextDecoder('utf-8');
+                    icsText = utf8Decoder.decode(buffer).replace(/^\uFEFF/, '');
+                    if (/[^\u0000-\u00FF]/.test(icsText) === false && /Ã|�/.test(icsText)) {
+                        // Likely mojibake from wrong charset; try latin1 fallback using original buffer
+                        try {
+                            icsText = new TextDecoder('latin1').decode(buffer);
+                        } catch (_) { /* ignore */ }
+                    }
                 }
                 
                 // Nettoyage du texte si nécessaire
@@ -272,7 +287,7 @@ function SchedulePage({ onBack }) {
         setIsTestData(false)
         
         try {
-            const events = await parseICS(linksData[className])
+            const events = await parseICS(linksData[className], className)
             setScheduleData(events)
             setIsTestData(false)
         } catch (err) {
