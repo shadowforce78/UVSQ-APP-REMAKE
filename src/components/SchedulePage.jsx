@@ -98,13 +98,16 @@ function SchedulePage({ onBack }) {
     const serverProxyAlt = altApiOrigin ? `${altApiOrigin}/api/ics?url=${encodeURIComponent(url)}` : ''
     // Endpoint Python local (JSON { ics: "..." }) si disponible
     // const pyApiBase = 'http://127.0.0.1:63246';
+    // Désactivé en production pour éviter CORS cross-origin
+    const enablePyIcsJson = hostname === 'localhost' || hostname === '127.0.0.1';
     const pyApiBase = "https://api.saumondeluxe.com";
         const proxies = [
-            // Nouvel endpoint Python qui renvoie JSON { ics: "..." }
-            ...(className ? [{ url: `${pyApiBase}/uvsq/edt/ics/${encodeURIComponent(className)}`, name: 'py-ics-json' }] : []),
-            // Proxy côté serveur en priorité (contourne CORS en prod)
-            { url: serverProxy, name: 'server-proxy' },
+            // Priorité: API backend dédiée au sous-domaine api.<host>
             ...(serverProxyAlt ? [{ url: serverProxyAlt, name: 'server-proxy-alt' }] : []),
+            // Fallback: même origine (utile en dev avec proxy Vite)
+            { url: serverProxy, name: 'server-proxy' },
+            // Optionnel: endpoint Python (JSON) uniquement en local/dev
+            ...(enablePyIcsJson && className ? [{ url: `${pyApiBase}/uvsq/edt/ics/${encodeURIComponent(className)}`, name: 'py-ics-json' }] : []),
             // Essai direct ensuite (utile en local si CORS ouvert)
             { url: url, name: 'direct' },
             // Proxies publics en dernier recours
@@ -121,11 +124,9 @@ function SchedulePage({ onBack }) {
                 
                 const response = await fetch(proxy.url, {
                     method: 'GET',
+                    // Éviter les en-têtes non simples pour limiter les preflights CORS
                     headers: {
-                        // JSON attendu seulement pour l'endpoint Python
-                        'Accept': proxy.name === 'py-ics-json' ? 'application/json' : 'text/calendar,text/plain,*/*; charset=utf-8',
-                        'Accept-Charset': 'utf-8',
-                        ...(proxy.name === 'direct' ? {} : { 'X-Requested-With': 'XMLHttpRequest' })
+                        'Accept': proxy.name === 'py-ics-json' ? 'application/json' : 'text/calendar,text/plain,*/*; charset=utf-8'
                     }
                 });
                 
