@@ -15,15 +15,6 @@ services:
       - LETSENCRYPT_EMAIL=planque.adam@gmail.com
     expose:
       - "3001" # expose seulement au proxy (pas de binding host direct)
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -f http://localhost:3001/api/bulletin/test || exit 1",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     networks:
       - proxy-tier
 
