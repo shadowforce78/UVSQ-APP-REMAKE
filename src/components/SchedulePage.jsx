@@ -97,7 +97,8 @@ function SchedulePage({ onBack }) {
     const altApiOrigin = hostname ? `${protocol}//api.${hostname}` : ''
     const serverProxyAlt = altApiOrigin ? `${altApiOrigin}/api/ics?url=${encodeURIComponent(url)}` : ''
     // Endpoint Python local (JSON { ics: "..." }) si disponible
-    const pyApiBase = 'http://127.0.0.1:63246';
+    // const pyApiBase = 'http://127.0.0.1:63246';
+    const pyApiBase = "https://api.saumondeluxe.com";
         const proxies = [
             // Nouvel endpoint Python qui renvoie JSON { ics: "..." }
             ...(className ? [{ url: `${pyApiBase}/uvsq/edt/ics/${encodeURIComponent(className)}`, name: 'py-ics-json' }] : []),
