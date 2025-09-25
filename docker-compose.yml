@@ -29,12 +29,18 @@ services:
       - uvsq-backend
     environment:
       - VIRTUAL_HOST=uvsq.saumondeluxe.com
+      - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=uvsq.saumondeluxe.com
       - LETSENCRYPT_EMAIL=planque.adam@gmail.com
     expose:
       - "80"
     networks:
       - proxy-tier
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 networks:
   proxy-tier:
