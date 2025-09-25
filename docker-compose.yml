@@ -13,6 +13,7 @@ services:
       - VIRTUAL_HOST=api.uvsq.saumondeluxe.com
       - LETSENCRYPT_HOST=api.uvsq.saumondeluxe.com
       - LETSENCRYPT_EMAIL=planque.adam@gmail.com
+      - VIRTUAL_PORT=3001
     expose:
       - "3001" # expose seulement au proxy (pas de binding host direct)
     networks:
